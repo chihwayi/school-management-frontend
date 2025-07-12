@@ -153,6 +153,9 @@ export const ROUTES = {
   REPORTS: '/app/reports',
   ATTENDANCE: '/app/attendance',
   GUARDIANS: '/app/guardians',
+  FEES_PAYMENT: '/app/fees/payment',
+  FEES_STATUS: '/app/fees/status',
+  FEES_REPORTS: '/app/fees/reports',
   PROFILE: '/app/profile',
   SETTINGS: '/app/settings'
 } as const;

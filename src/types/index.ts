@@ -429,3 +429,6 @@ export interface Theme {
   logoPath?: string;
   backgroundPath?: string;
 }
+
+// Fee Payment Types
+export * from './feePayment';

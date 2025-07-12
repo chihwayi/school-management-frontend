@@ -29,6 +29,7 @@ import { AssessmentsPage, AssessmentDetailPage } from './pages/assessments';
 import { AttendancePage, AttendanceDetailPage } from './pages/attendance';
 import { ReportsPage, ReportDetailPage } from './pages/reports';
 import { GuardiansPage, GuardianDetailPage } from './pages/guardians';
+import { FeePaymentPage, PaymentStatusPage, FinancialReportsPage } from './pages/fees';
 
 // Hooks
 import { useAuth } from './hooks/useAuth';
@@ -152,6 +153,11 @@ const App: React.FC = () => {
                 {/* Guardian Management */}
                 <Route path="guardians" element={<GuardiansPage />} />
                 <Route path="guardians/:id" element={<GuardianDetailPage />} />
+
+                {/* Fee Management */}
+                <Route path="fees/payment" element={<FeePaymentPage />} />
+                <Route path="fees/status" element={<PaymentStatusPage />} />
+                <Route path="fees/reports" element={<FinancialReportsPage />} />
 
                 {/* Catch all - redirect to dashboard */}
                 <Route path="*" element={<Navigate to="/app" replace />} />

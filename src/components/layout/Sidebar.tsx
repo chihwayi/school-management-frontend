@@ -11,7 +11,8 @@ import {
     ClipboardList,
     UserCheck,
     BarChart3,
-    Shield
+    Shield,
+    DollarSign
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { ROUTES } from '../../constants';
@@ -97,6 +98,27 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             icon: Shield,
             current: location.pathname === ROUTES.GUARDIANS,
             show: isAdmin() || isClerk()
+        },
+        {
+            name: 'Fee Payment',
+            href: ROUTES.FEES_PAYMENT,
+            icon: DollarSign,
+            current: location.pathname === ROUTES.FEES_PAYMENT,
+            show: isClerk()
+        },
+        {
+            name: 'Payment Status',
+            href: ROUTES.FEES_STATUS,
+            icon: Users,
+            current: location.pathname === ROUTES.FEES_STATUS,
+            show: isAdmin() || isClerk()
+        },
+        {
+            name: 'Financial Reports',
+            href: ROUTES.FEES_REPORTS,
+            icon: BarChart3,
+            current: location.pathname === ROUTES.FEES_REPORTS,
+            show: isAdmin()
         }
     ];
 
