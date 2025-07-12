@@ -1,12 +1,18 @@
 import React, { useEffect } from 'react';
-import { useSchoolStore } from '../../store/schoolStore';
+import { useAuth } from '../../hooks/useAuth';
 
 interface ThemeProviderProps {
   children: React.ReactNode;
 }
 
 const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
-  const { theme } = useSchoolStore();
+  const { theme } = useAuth();
+  
+  const getFullImageUrl = (path: string | null) => {
+    if (!path) return null;
+    if (path.startsWith('http')) return path;
+    return `http://localhost:8080${path}`;
+  };
 
   useEffect(() => {
     if (theme) {
@@ -17,8 +23,15 @@ const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       
       // Apply background image if available
       if (theme.backgroundPath) {
-        root.style.setProperty('--background-image', `url(${theme.backgroundPath})`);
+        const fullUrl = getFullImageUrl(theme.backgroundPath);
+        if (fullUrl) {
+          root.style.setProperty('--background-image', `url(${fullUrl})`);
+        }
       }
+      
+      // Update Tailwind primary colors
+      root.style.setProperty('--color-primary-600', theme.primaryColor);
+      root.style.setProperty('--color-primary-700', theme.primaryColor);
     }
   }, [theme]);
 

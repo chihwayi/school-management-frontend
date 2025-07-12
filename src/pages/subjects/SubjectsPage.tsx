@@ -150,7 +150,7 @@ const SubjectsPage: React.FC = () => {
           <p className="text-gray-600">Manage school subjects and their configurations</p>
         </div>
         {canManageSubjects() && (
-          <Button onClick={handleCreateSubject} className="flex items-center space-x-2">
+          <Button onClick={handleCreateSubject} className="flex items-center space-x-2" useTheme>
             <Plus className="h-4 w-4" />
             <span>Add Subject</span>
           </Button>

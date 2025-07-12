@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { GraduationCap, Mail, Lock, User, IdCard } from 'lucide-react';
 import type { TeacherRegistrationDTO } from '../../types';
 import { Button, Input, Card } from '../ui';
-import { validateEmail, validatePassword } from '../../utils';
+import { validateEmail, validatePassword } from '../../utils/validation';
 
 interface TeacherRegistrationFormProps {
   onSubmit: (data: TeacherRegistrationDTO) => Promise<void>;

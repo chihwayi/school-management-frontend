@@ -1,6 +1,5 @@
-// src/utils/validation.ts
 import { VALIDATION_RULES } from '../constants';
-import type { SchoolConfigDTO, StudentRegistrationDTO, TeacherRegistrationDTO, AssessmentDTO } from '../types';
+import type { SchoolConfigDTO } from '../types';
 
 export interface ValidationResult {
   isValid: boolean;
@@ -240,6 +239,22 @@ export function validateHexColor(color: string): FieldValidationResult {
 }
 
 /**
+ * Validate URL format
+ */
+export function validateUrl(url: string): FieldValidationResult {
+  if (!url || url.trim() === '') {
+    return { isValid: true }; // URL is optional
+  }
+  
+  const urlPattern = /^https?:\/\/.+/;
+  if (!urlPattern.test(url)) {
+    return { isValid: false, message: 'URL must start with http:// or https://' };
+  }
+  
+  return { isValid: true };
+}
+
+/**
  * Validate school configuration
  */
 export function validateSchoolConfig(config: SchoolConfigDTO): ValidationResult {
@@ -295,9 +310,9 @@ export function validateSchoolConfig(config: SchoolConfigDTO): ValidationResult 
   
   // Validate website URL if provided
   if (config.website) {
-    const urlPattern = /^https?:\/\/.+/;
-    if (!urlPattern.test(config.website)) {
-      errors.push('Website must be a valid URL starting with http:// or https://');
+    const urlResult = validateUrl(config.website);
+    if (!urlResult.isValid) {
+      errors.push(urlResult.message!);
     }
   }
   

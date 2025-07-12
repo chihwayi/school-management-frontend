@@ -14,7 +14,6 @@ import {
     Shield
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
-import { useSchoolStore } from '../../store/schoolStore';
 import { ROUTES } from '../../constants';
 import { cn } from '../../utils';
 
@@ -25,8 +24,15 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     const location = useLocation();
-    const { isAdmin, isClerk, isTeacher, isClassTeacher } = useAuth();
-    const { school } = useSchoolStore();
+    const { isAdmin, isClerk, isTeacher, isClassTeacher, school, theme } = useAuth();
+    
+    const getFullImageUrl = (path: string | null) => {
+        if (!path) return null;
+        if (path.startsWith('http')) return path;
+        return `http://localhost:8080${path}`;
+    };
+    
+    const primaryColor = theme?.primaryColor || '#1F2937';
 
     const navigation = [
         {
@@ -99,16 +105,26 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     const SidebarContent = () => (
         <div className="flex flex-col h-full bg-gray-900">
             {/* School Logo/Brand */}
-            <div className="flex items-center justify-center h-16 px-4 bg-gray-800">
+            <div 
+                className="flex items-center justify-center h-16 px-4"
+                style={{ backgroundColor: primaryColor }}
+            >
                 <div className="flex items-center">
-                    {school?.logoPath ? (
+                    {theme?.logoPath ? (
                         <img
-                            src={school.logoPath}
-                            alt={school.name}
-                            className="h-8 w-8 rounded-full"
+                            src={getFullImageUrl(theme.logoPath)}
+                            alt={school?.name || 'School Logo'}
+                            className="h-8 w-8 rounded-full object-cover"
+                            onError={(e) => {
+                                console.error('Failed to load sidebar logo:', theme.logoPath);
+                                e.currentTarget.style.display = 'none';
+                            }}
                         />
                     ) : (
-                        <div className="h-8 w-8 bg-primary-600 rounded-full flex items-center justify-center">
+                        <div 
+                            className="h-8 w-8 rounded-full flex items-center justify-center"
+                            style={{ backgroundColor: theme?.secondaryColor || '#374151' }}
+                        >
                             <span className="text-white font-bold text-sm">
                                 {school?.name?.charAt(0) || 'S'}
                             </span>
@@ -131,9 +147,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                         className={cn(
                             'group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors',
                             item.current
-                                ? 'bg-primary-700 text-white'
+                                ? 'text-white'
                                 : 'text-gray-300 hover:bg-gray-700 hover:text-white'
                         )}
+                        style={item.current ? { backgroundColor: primaryColor } : {}}
                         onClick={onClose}
                     >
                         <item.icon

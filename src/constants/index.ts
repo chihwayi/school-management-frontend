@@ -144,17 +144,17 @@ export const ROUTES = {
   HOME: '/',
   LOGIN: '/login',
   SETUP: '/setup',
-  DASHBOARD: '/dashboard',
-  STUDENTS: '/students',
-  TEACHERS: '/teachers',
-  CLASSES: '/classes',
-  SUBJECTS: '/subjects',
-  ASSESSMENTS: '/assessments',
-  REPORTS: '/reports',
-  ATTENDANCE: '/attendance',
-  GUARDIANS: '/guardians',
-  PROFILE: '/profile',
-  SETTINGS: '/settings'
+  DASHBOARD: '/app',
+  STUDENTS: '/app/students',
+  TEACHERS: '/app/teachers',
+  CLASSES: '/app/classes',
+  SUBJECTS: '/app/subjects',
+  ASSESSMENTS: '/app/assessments',
+  REPORTS: '/app/reports',
+  ATTENDANCE: '/app/attendance',
+  GUARDIANS: '/app/guardians',
+  PROFILE: '/app/profile',
+  SETTINGS: '/app/settings'
 } as const;
 
 // API Endpoints

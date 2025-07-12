@@ -4,7 +4,8 @@ import { toast } from 'react-hot-toast';
 import { Button, Input, Select, Card } from '../ui';
 import type { RegisterRequest } from '../../types';
 import { ERole } from '../../types';
-import { validateEmail, validatePassword, formatRoleName } from '../../utils';
+import { validateEmail, validatePassword } from '../../utils/validation';
+import { formatRoleName } from '../../utils';
 
 interface UserRegistrationFormProps {
   onSubmit: (data: RegisterRequest) => Promise<void>;

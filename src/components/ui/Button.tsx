@@ -1,10 +1,12 @@
 import React from 'react';
+import { useAuth } from '../../hooks/useAuth';
 import { cn } from '../../utils';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
   size?: 'sm' | 'md' | 'lg';
   loading?: boolean;
+  useTheme?: boolean;
   children: React.ReactNode;
 }
 
@@ -12,11 +14,14 @@ const Button: React.FC<ButtonProps> = ({
   variant = 'primary',
   size = 'md',
   loading = false,
+  useTheme = false,
   disabled,
   className,
+  style,
   children,
   ...props
 }) => {
+  const { theme } = useAuth();
   const baseStyles = 'inline-flex items-center justify-center font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
   
   const variants = {
@@ -33,14 +38,27 @@ const Button: React.FC<ButtonProps> = ({
     lg: 'px-6 py-3 text-base'
   };
 
+  const getThemedStyle = () => {
+    if (!useTheme || !theme?.primaryColor || variant !== 'primary') {
+      return style;
+    }
+    
+    return {
+      backgroundColor: theme.primaryColor,
+      borderColor: theme.primaryColor,
+      ...style
+    };
+  };
+
   return (
     <button
       className={cn(
         baseStyles,
-        variants[variant],
+        useTheme && variant === 'primary' ? 'text-white hover:opacity-90 focus:ring-2' : variants[variant],
         sizes[size],
         className
       )}
+      style={getThemedStyle()}
       disabled={disabled || loading}
       {...props}
     >

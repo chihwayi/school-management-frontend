@@ -1,4 +1,3 @@
-// src/utils/index.ts
 import { clsx, type ClassValue } from 'clsx';
 import { format, parseISO } from 'date-fns';
 import { GRADES, GRADE_POINTS, DATE_FORMATS, VALIDATION_RULES } from '../constants';
@@ -201,41 +200,7 @@ export function formatAssessmentType(type: AssessmentType): string {
   return typeMap[type] || type;
 }
 
-/**
- * Validate email format
- */
-export function validateEmail(email: string): boolean {
-  return VALIDATION_RULES.EMAIL.PATTERN.test(email);
-}
 
-/**
- * Validate password strength
- */
-export function validatePassword(password: string): boolean {
-  return password.length >= VALIDATION_RULES.PASSWORD.MIN_LENGTH &&
-         VALIDATION_RULES.PASSWORD.PATTERN.test(password);
-}
-
-/**
- * Validate phone number format
- */
-export function validatePhone(phone: string): boolean {
-  return VALIDATION_RULES.PHONE.PATTERN.test(phone);
-}
-
-/**
- * Validate student ID format
- */
-export function validateStudentId(studentId: string): boolean {
-  return VALIDATION_RULES.STUDENT_ID.PATTERN.test(studentId);
-}
-
-/**
- * Validate employee ID format
- */
-export function validateEmployeeId(employeeId: string): boolean {
-  return VALIDATION_RULES.EMPLOYEE_ID.PATTERN.test(employeeId);
-}
 
 /**
  * Capitalize first letter of each word

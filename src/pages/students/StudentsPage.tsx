@@ -126,7 +126,7 @@ const StudentsPage: React.FC = () => {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Students Management</h1>
-        <Button onClick={() => setIsModalOpen(true)}>
+        <Button onClick={() => setIsModalOpen(true)} useTheme>
           <Plus className="w-4 h-4 mr-2" />
           Add Student
         </Button>

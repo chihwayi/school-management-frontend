@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
 import { Button, Input, Select } from '../ui';
 import type { GuardianDTO, Guardian } from '../../types';
-import { validatePhone } from '../../utils';
+import { validatePhone } from '../../utils/validation';
 
 interface GuardianFormProps {
   onSubmit?: (data: GuardianDTO) => Promise<void>;

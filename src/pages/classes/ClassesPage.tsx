@@ -205,7 +205,7 @@ const ClassesPage: React.FC = () => {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900">Classes</h1>
         {canManageClasses() && (
-          <Button onClick={openCreateModal}>
+          <Button onClick={openCreateModal} useTheme>
             <Plus className="h-4 w-4 mr-2" />
             Add Class
           </Button>
