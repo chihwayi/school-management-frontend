@@ -112,14 +112,14 @@ const FeePaymentPage: React.FC = () => {
                 value={selectedStudent?.toString() || ''}
                 onChange={(e) => setSelectedStudent(Number(e.target.value))}
                 placeholder="Select student"
-              >
-                <option value="">Select student</option>
-                {students?.map(student => (
-                  <option key={student.id} value={student.id}>
-                    {student.firstName} {student.lastName} - {student.studentId}
-                  </option>
-                ))}
-              </Select>
+                options={[
+                  { value: '', label: 'Select student' },
+                  ...(students || []).map(student => ({
+                    value: student.id.toString(),
+                    label: `${student.firstName} ${student.lastName} - ${student.studentId}`
+                  }))
+                ]}
+              />
             </div>
 
             <div className="grid grid-cols-2 gap-4">

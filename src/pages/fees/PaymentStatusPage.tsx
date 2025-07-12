@@ -77,14 +77,14 @@ const PaymentStatusPage: React.FC = () => {
               }
             }}
             placeholder="Select class"
-          >
-            <option value="">Select class</option>
-            {classes?.map(cls => (
-              <option key={cls.id} value={`${cls.form}-${cls.section}`}>
-                {cls.form} {cls.section}
-              </option>
-            ))}
-          </Select>
+            options={[
+              { value: '', label: 'Select class' },
+              ...(classes || []).map(cls => ({
+                value: `${cls.form}-${cls.section}`,
+                label: `${cls.form} ${cls.section}`
+              }))
+            ]}
+          />
         </div>
       </Card>
 
