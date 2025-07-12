@@ -1,48 +1,37 @@
-import React, { useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
+import React from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import LoadingSpinner  from '../../components/common/LoadingSpinner';
+import AdminDashboard from './AdminDashboard';
+import TeacherDashboard from './TeacherDashboard';
+import ClassTeacherDashboard from './ClassTeacherDashboard';
 import { ERole } from '../../types';
 
 const DashboardPage: React.FC = () => {
-  const { isAuthenticated, isSchoolConfigured, isLoading, hasRole } = useAuth();
+  const { hasRole } = useAuth();
 
-  useEffect(() => {
-    // This page serves as a router to appropriate dashboards
-    // based on user roles
-  }, []);
+  // Determine component type first to avoid conditional hook calls
+  const dashboardType = React.useMemo(() => {
+    if (hasRole(ERole.ROLE_ADMIN) || hasRole(ERole.ROLE_CLERK)) {
+      return 'admin';
+    }
+    if (hasRole(ERole.ROLE_CLASS_TEACHER)) {
+      return 'class-teacher';
+    }
+    if (hasRole(ERole.ROLE_TEACHER)) {
+      return 'teacher';
+    }
+    return 'admin'; // Default fallback
+  }, [hasRole]);
 
-  if (isLoading) {
-    return <LoadingSpinner />;
+  // Render appropriate dashboard based on determined type
+  switch (dashboardType) {
+    case 'class-teacher':
+      return <ClassTeacherDashboard />;
+    case 'teacher':
+      return <TeacherDashboard />;
+    case 'admin':
+    default:
+      return <AdminDashboard />;
   }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (!isSchoolConfigured) {
-    return <Navigate to="/setup" replace />;
-  }
-
-  // Route to appropriate dashboard based on highest role
-  if (hasRole(ERole.ROLE_ADMIN)) {
-    return <Navigate to="/admin-dashboard" replace />;
-  }
-
-  if (hasRole(ERole.ROLE_CLERK)) {
-    return <Navigate to="/admin-dashboard" replace />;
-  }
-
-  if (hasRole(ERole.ROLE_CLASS_TEACHER)) {
-    return <Navigate to="/class-teacher-dashboard" replace />;
-  }
-
-  if (hasRole(ERole.ROLE_TEACHER)) {
-    return <Navigate to="/teacher-dashboard" replace />;
-  }
-
-  // Default fallback - should not happen with proper role assignment
-  return <Navigate to="/admin-dashboard" replace />;
 };
 
 export default DashboardPage;

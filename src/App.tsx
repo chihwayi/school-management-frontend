@@ -90,17 +90,7 @@ const RootRoute: React.FC = () => {
 
 // Dashboard Route Component
 const DashboardRoute: React.FC = () => {
-  const { hasRole } = useAuth();
-
-  if (hasRole(ERole.ROLE_ADMIN)) {
-    return <AdminDashboard />;
-  } else if (hasRole(ERole.ROLE_CLASS_TEACHER)) {
-    return <ClassTeacherDashboard />;
-  } else if (hasRole(ERole.ROLE_TEACHER)) {
-    return <TeacherDashboard />;
-  } else {
-    return <DashboardPage />;
-  }
+  return <DashboardPage />;
 };
 
 const App: React.FC = () => {

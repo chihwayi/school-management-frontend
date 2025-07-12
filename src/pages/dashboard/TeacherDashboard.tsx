@@ -47,16 +47,25 @@ const TeacherDashboard: React.FC = () => {
     return <LoadingSpinner />;
   }
 
-  // Calculate stats
+  // Calculate stats - always call useMemo to maintain hook order
   const stats = React.useMemo(() => {
-    const totalAssignments = assignments?.length || 0;
-    const uniqueSubjects = new Set(assignments?.map(a => a.subject.id)).size;
-    const uniqueClasses = new Set(assignments?.map(a => `${a.form}-${a.section}`)).size;
-    const totalStudents = assignments?.reduce((sum, assignment) => {
+    if (!assignments) {
+      return {
+        totalAssignments: 0,
+        uniqueSubjects: 0,
+        uniqueClasses: 0,
+        totalStudents: 0,
+      };
+    }
+    
+    const totalAssignments = assignments.length;
+    const uniqueSubjects = new Set(assignments.map(a => a.subject.id)).size;
+    const uniqueClasses = new Set(assignments.map(a => `${a.form}-${a.section}`)).size;
+    const totalStudents = assignments.reduce((sum, assignment) => {
       // This would need to be calculated based on actual class sizes
       // For now, we'll use a placeholder
       return sum + 25; // Assuming average class size of 25
-    }, 0) || 0;
+    }, 0);
     
     return {
       totalAssignments,
@@ -71,42 +80,42 @@ const TeacherDashboard: React.FC = () => {
       title: 'Record Assessment',
       description: 'Add exam or coursework marks',
       icon: <ClipboardList className="h-6 w-6" />,
-      href: '/assessments/record',
+      href: '/app/assessments',
       color: 'bg-green-500',
     },
     {
       title: 'View Students',
       description: 'See students in your classes',
       icon: <Users className="h-6 w-6" />,
-      href: '/students/my-classes',
+      href: '/app/students',
       color: 'bg-blue-500',
     },
     {
       title: 'Subject Comments',
       description: 'Add comments to student reports',
       icon: <MessageSquare className="h-6 w-6" />,
-      href: '/reports/subject-comments',
+      href: '/app/reports',
       color: 'bg-purple-500',
     },
     {
       title: 'My Subjects',
       description: 'View your teaching subjects',
       icon: <BookOpen className="h-6 w-6" />,
-      href: '/subjects/my-subjects',
+      href: '/app/subjects',
       color: 'bg-indigo-500',
     },
     {
       title: 'Student Reports',
       description: 'View student performance reports',
       icon: <FileText className="h-6 w-6" />,
-      href: '/reports/student-reports',
+      href: '/app/reports',
       color: 'bg-orange-500',
     },
     {
       title: 'Performance Analytics',
       description: 'Analyze class performance',
       icon: <BarChart3 className="h-6 w-6" />,
-      href: '/analytics/performance',
+      href: '/app/reports',
       color: 'bg-teal-500',
     },
   ];
@@ -257,7 +266,7 @@ const TeacherDashboard: React.FC = () => {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => window.location.href = `/assessments/record?assignment=${assignment.id}`}
+                    onClick={() => window.location.href = `/app/assessments`}
                   >
                     <ClipboardList className="h-4 w-4 mr-1" />
                     Record Assessment
@@ -265,7 +274,7 @@ const TeacherDashboard: React.FC = () => {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => window.location.href = `/students/subject/${assignment.subject.id}/class/${assignment.form}-${assignment.section}`}
+                    onClick={() => window.location.href = `/app/students`}
                   >
                     <Users className="h-4 w-4 mr-1" />
                     View Students
@@ -273,7 +282,7 @@ const TeacherDashboard: React.FC = () => {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => window.location.href = `/reports/subject/${assignment.subject.id}/class/${assignment.form}-${assignment.section}`}
+                    onClick={() => window.location.href = `/app/reports`}
                   >
                     <MessageSquare className="h-4 w-4 mr-1" />
                     Add Comments

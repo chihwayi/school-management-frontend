@@ -90,42 +90,42 @@ const AdminDashboard: React.FC = () => {
       title: 'Register Student',
       description: 'Add new students to the system',
       icon: <Users className="h-6 w-6" />,
-      href: '/students/register',
+      href: '/app/students',
       color: 'bg-blue-500',
     },
     {
       title: 'Register Teacher',
       description: 'Add new teachers to the system',
       icon: <UserCheck className="h-6 w-6" />,
-      href: '/teachers/register',
+      href: '/app/teachers',
       color: 'bg-green-500',
     },
     {
       title: 'Create Class',
       description: 'Set up new classes',
       icon: <GraduationCap className="h-6 w-6" />,
-      href: '/classes/create',
+      href: '/app/classes',
       color: 'bg-purple-500',
     },
     {
       title: 'Add Subject',
       description: 'Add new subjects',
       icon: <BookOpen className="h-6 w-6" />,
-      href: '/subjects/create',
+      href: '/app/subjects',
       color: 'bg-orange-500',
     },
     {
       title: 'Generate Reports',
       description: 'Create student reports',
       icon: <FileText className="h-6 w-6" />,
-      href: '/reports/generate',
+      href: '/app/reports',
       color: 'bg-red-500',
     },
     {
       title: 'Teacher Assignments',
       description: 'Manage teacher assignments',
       icon: <Settings className="h-6 w-6" />,
-      href: '/teachers/assignments',
+      href: '/app/teachers',
       color: 'bg-indigo-500',
     },
   ];
@@ -134,37 +134,37 @@ const AdminDashboard: React.FC = () => {
     {
       title: 'Student Management',
       items: [
-        { name: 'All Students', href: '/students', icon: <Users className="h-5 w-5" />, count: stats.totalStudents },
-        { name: 'Register Student', href: '/students/register', icon: <UserPlus className="h-5 w-5" /> },
-        { name: 'Student Promotion', href: '/students/promotion', icon: <TrendingUp className="h-5 w-5" /> },
-        { name: 'Guardian Management', href: '/guardians', icon: <Users className="h-5 w-5" /> },
+        { name: 'All Students', href: '/app/students', icon: <Users className="h-5 w-5" />, count: stats.totalStudents },
+        { name: 'Register Student', href: '/app/students', icon: <UserPlus className="h-5 w-5" /> },
+        { name: 'Student Promotion', href: '/app/students', icon: <TrendingUp className="h-5 w-5" /> },
+        { name: 'Guardian Management', href: '/app/guardians', icon: <Users className="h-5 w-5" /> },
       ]
     },
     {
       title: 'Teacher Management',
       items: [
-        { name: 'All Teachers', href: '/teachers', icon: <UserCheck className="h-5 w-5" />, count: stats.totalTeachers },
-        { name: 'Register Teacher', href: '/teachers/register', icon: <UserPlus className="h-5 w-5" /> },
-        { name: 'Assignments', href: '/teachers/assignments', icon: <ClipboardList className="h-5 w-5" /> },
-        { name: 'Class Teachers', href: '/teachers/class-assignments', icon: <School className="h-5 w-5" /> },
+        { name: 'All Teachers', href: '/app/teachers', icon: <UserCheck className="h-5 w-5" />, count: stats.totalTeachers },
+        { name: 'Register Teacher', href: '/app/teachers', icon: <UserPlus className="h-5 w-5" /> },
+        { name: 'Assignments', href: '/app/teachers', icon: <ClipboardList className="h-5 w-5" /> },
+        { name: 'Class Teachers', href: '/app/teachers', icon: <School className="h-5 w-5" /> },
       ]
     },
     {
       title: 'Academic Management',
       items: [
-        { name: 'All Classes', href: '/classes', icon: <GraduationCap className="h-5 w-5" />, count: stats.totalClasses },
-        { name: 'All Subjects', href: '/subjects', icon: <BookOpen className="h-5 w-5" />, count: stats.totalSubjects },
-        { name: 'Assessment Records', href: '/assessments', icon: <ClipboardList className="h-5 w-5" /> },
-        { name: 'Attendance', href: '/attendance', icon: <Calendar className="h-5 w-5" /> },
+        { name: 'All Classes', href: '/app/classes', icon: <GraduationCap className="h-5 w-5" />, count: stats.totalClasses },
+        { name: 'All Subjects', href: '/app/subjects', icon: <BookOpen className="h-5 w-5" />, count: stats.totalSubjects },
+        { name: 'Assessment Records', href: '/app/assessments', icon: <ClipboardList className="h-5 w-5" /> },
+        { name: 'Attendance', href: '/app/attendance', icon: <Calendar className="h-5 w-5" /> },
       ]
     },
     {
       title: 'Reports & Analytics',
       items: [
-        { name: 'Generate Reports', href: '/reports/generate', icon: <FileText className="h-5 w-5" /> },
-        { name: 'View Reports', href: '/reports', icon: <Eye className="h-5 w-5" /> },
-        { name: 'Performance Analytics', href: '/analytics', icon: <BarChart3 className="h-5 w-5" /> },
-        { name: 'School Statistics', href: '/statistics', icon: <TrendingUp className="h-5 w-5" /> },
+        { name: 'Generate Reports', href: '/app/reports', icon: <FileText className="h-5 w-5" /> },
+        { name: 'View Reports', href: '/app/reports', icon: <Eye className="h-5 w-5" /> },
+        { name: 'Performance Analytics', href: '/app/reports', icon: <BarChart3 className="h-5 w-5" /> },
+        { name: 'School Statistics', href: '/app/reports', icon: <TrendingUp className="h-5 w-5" /> },
       ]
     }
   ];

@@ -81,7 +81,7 @@ const TeachersPage: React.FC = () => {
     const fullName = `${teacher.firstName} ${teacher.lastName}`;
     return fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
            teacher.employeeId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-           teacher.user.email.toLowerCase().includes(searchTerm.toLowerCase());
+           (teacher.user?.email || '').toLowerCase().includes(searchTerm.toLowerCase());
   });
 
 
@@ -90,8 +90,8 @@ const TeachersPage: React.FC = () => {
     employeeId: teacher.employeeId,
     firstName: teacher.firstName,
     lastName: teacher.lastName,
-    email: teacher.user.email,
-    roles: teacher.user.roles.map(role => role.name.replace('ROLE_', '')).join(', '),
+    email: teacher.user?.email || 'N/A',
+    roles: teacher.user?.roles?.map(role => role.name.replace('ROLE_', '')).join(', ') || 'N/A',
     actions: (
       <div className="flex space-x-2">
         <Button

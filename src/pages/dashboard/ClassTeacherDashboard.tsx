@@ -77,42 +77,42 @@ const ClassTeacherDashboard: React.FC = () => {
       title: 'Mark Attendance',
       description: 'Record student attendance for your classes',
       icon: <UserCheck className="h-6 w-6" />,
-      href: '/attendance/mark',
+      href: '/app/attendance',
       color: 'bg-blue-500',
     },
     {
       title: 'Record Assessment',
       description: 'Add exam or coursework marks',
       icon: <ClipboardList className="h-6 w-6" />,
-      href: '/assessments/record',
+      href: '/app/assessments',
       color: 'bg-green-500',
     },
     {
       title: 'View Reports',
       description: 'Review and comment on student reports',
       icon: <FileText className="h-6 w-6" />,
-      href: '/reports/view',
+      href: '/app/reports',
       color: 'bg-purple-500',
     },
     {
       title: 'Overall Comments',
       description: 'Add overall comments to student reports',
       icon: <MessageSquare className="h-6 w-6" />,
-      href: '/reports/comments',
+      href: '/app/reports',
       color: 'bg-orange-500',
     },
     {
       title: 'Class Management',
       description: 'Manage your supervised classes',
       icon: <Users className="h-6 w-6" />,
-      href: '/classes/manage',
+      href: '/app/classes',
       color: 'bg-indigo-500',
     },
     {
       title: 'Subject Teaching',
       description: 'View students for subjects you teach',
       icon: <BookOpen className="h-6 w-6" />,
-      href: '/subjects/teaching',
+      href: '/app/subjects',
       color: 'bg-teal-500',
     },
   ];
@@ -255,7 +255,7 @@ const ClassTeacherDashboard: React.FC = () => {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => window.location.href = `/attendance/mark?class=${classGroup.id}`}
+                      onClick={() => window.location.href = `/app/attendance`}
                     >
                       <UserCheck className="h-4 w-4 mr-1" />
                       Mark Attendance
@@ -263,7 +263,7 @@ const ClassTeacherDashboard: React.FC = () => {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => window.location.href = `/reports/class/${classGroup.id}`}
+                      onClick={() => window.location.href = `/app/reports`}
                     >
                       <FileText className="h-4 w-4 mr-1" />
                       View Reports
@@ -308,7 +308,7 @@ const ClassTeacherDashboard: React.FC = () => {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => window.location.href = `/assessments/record?assignment=${assignment.id}`}
+                      onClick={() => window.location.href = `/app/assessments`}
                     >
                       <ClipboardList className="h-4 w-4 mr-1" />
                       Record Assessment
@@ -316,7 +316,7 @@ const ClassTeacherDashboard: React.FC = () => {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => window.location.href = `/students/subject/${assignment.subject.id}/class/${assignment.form}-${assignment.section}`}
+                      onClick={() => window.location.href = `/app/students`}
                     >
                       <Users className="h-4 w-4 mr-1" />
                       View Students
