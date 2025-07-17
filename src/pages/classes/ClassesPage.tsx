@@ -34,6 +34,7 @@ const ClassesPage: React.FC = () => {
     try {
       setLoading(true);
       const data = await classService.getAllClassGroups();
+      console.log('Classes loaded:', data);
       setClasses(data);
     } catch (error) {
       toast.error('Failed to load classes');
@@ -145,21 +146,27 @@ const ClassesPage: React.FC = () => {
     { key: 'actions', header: 'Actions' }
   ];
 
-  const tableData = filteredClasses.map(classGroup => ({
+  const tableData = filteredClasses.map(classGroup => {
+  // Debug logging
+  console.log('Class group:', classGroup);
+  console.log('Class teacher:', classGroup.classTeacher);
+  console.log('Students:', classGroup.students);
+  
+  return {
     id: classGroup.id,
     form: classGroup.form,
     section: classGroup.section,
     academicYear: classGroup.academicYear,
-    classTeacher: classGroup.classTeacher 
+    classTeacher: classGroup.classTeacher && classGroup.classTeacher.firstName
       ? `${classGroup.classTeacher.firstName} ${classGroup.classTeacher.lastName}`
-      : 'Not assigned',
+      : 'Not Assigned',
     studentCount: classGroup.students?.length || 0,
     actions: (
       <div className="flex space-x-2">
         <Button
           variant="outline"
           size="sm"
-          onClick={() => navigate(`/classes/${classGroup.id}`)}
+          onClick={() => navigate(`/app/classes/${classGroup.id}`)}
         >
           <Eye className="h-4 w-4" />
         </Button>
@@ -190,7 +197,8 @@ const ClassesPage: React.FC = () => {
         )}
       </div>
     )
-  }));
+   };
+});
 
   if (loading) {
     return (

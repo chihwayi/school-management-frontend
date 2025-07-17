@@ -1,27 +1,32 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
+import { useQuery } from '@tanstack/react-query';
 import { BookOpen, Users } from 'lucide-react';
-import type { ClassGroup, Teacher } from '../../types';
+import type { ClassGroup, Teacher, Section } from '../../types';
 import { Button, Card, Select } from '../ui';
 import { FORMS } from '../../types';
+import { sectionService } from '../../services/sectionService';
 
 interface ClassFormProps {
   onSubmit: (data: Omit<ClassGroup, 'id' | 'students'>) => Promise<void>;
   teachers: Teacher[];
-  sections: string[];
   initialData?: ClassGroup;
   isLoading?: boolean;
   error?: string;
+  sections?: string[];
 }
 
 const ClassForm: React.FC<ClassFormProps> = ({
   onSubmit,
   teachers,
-  sections,
   initialData,
   isLoading,
   error
 }) => {
+  const { data: sections } = useQuery({
+    queryKey: ['sections-active'],
+    queryFn: sectionService.getActiveSections,
+  });
   const currentYear = new Date().getFullYear();
   
   const {
@@ -45,7 +50,10 @@ const ClassForm: React.FC<ClassFormProps> = ({
 
   const handleFormSubmit = async (data: Omit<ClassGroup, 'id' | 'students'>) => {
     try {
-      await onSubmit(data);
+      // Automatically determine level based on form
+      const level = FORMS.O_LEVEL.includes(data.form) ? 'O_LEVEL' : 'A_LEVEL';
+      const dataWithLevel = { ...data, level };
+      await onSubmit(dataWithLevel);
     } catch (error) {
       // Error handling is done in the parent component
     }
@@ -100,7 +108,10 @@ const ClassForm: React.FC<ClassFormProps> = ({
               label="Section"
               {...register('section', { required: 'Section is required' })}
               error={errors.section?.message}
-              options={sections.map(section => ({ value: section, label: section }))}
+              options={[
+                { value: '', label: 'Select section' },
+                ...(sections || []).map(section => ({ value: section.name, label: section.name }))
+              ]}
               placeholder="Select section"
             />
             

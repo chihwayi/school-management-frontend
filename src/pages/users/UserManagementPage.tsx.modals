@@ -1,0 +1,137 @@
+      {/* Password Reset Modal */}
+      <Modal
+        isOpen={isPasswordResetModalOpen}
+        onClose={() => {
+          setIsPasswordResetModalOpen(false);
+          setSelectedUser(null);
+          setNewPassword('');
+        }}
+        title="Reset Password"
+      >
+        <div className="space-y-4">
+          <p>Reset password for user: <strong>{selectedUser?.username}</strong></p>
+          <Input
+            type="password"
+            label="New Password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            placeholder="Enter new password"
+          />
+          <div className="flex justify-end space-x-3">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsPasswordResetModalOpen(false);
+                setSelectedUser(null);
+                setNewPassword('');
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleResetPassword}
+              disabled={!newPassword}
+            >
+              Reset Password
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Email Update Modal */}
+      <Modal
+        isOpen={isEmailUpdateModalOpen}
+        onClose={() => {
+          setIsEmailUpdateModalOpen(false);
+          setSelectedUser(null);
+          setNewEmail('');
+        }}
+        title="Update Email"
+      >
+        <div className="space-y-4">
+          <p>Update email for user: <strong>{selectedUser?.username}</strong></p>
+          <Input
+            type="email"
+            label="New Email"
+            value={newEmail}
+            onChange={(e) => setNewEmail(e.target.value)}
+            placeholder="Enter new email"
+          />
+          <div className="flex justify-end space-x-3">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsEmailUpdateModalOpen(false);
+                setSelectedUser(null);
+                setNewEmail('');
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleUpdateEmail}
+              disabled={!newEmail}
+            >
+              Update Email
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Role Update Modal */}
+      <Modal
+        isOpen={isRoleUpdateModalOpen}
+        onClose={() => {
+          setIsRoleUpdateModalOpen(false);
+          setSelectedUser(null);
+          setSelectedRoles([]);
+        }}
+        title="Update Roles"
+      >
+        <div className="space-y-4">
+          <p>Update roles for user: <strong>{selectedUser?.username}</strong></p>
+          <div className="space-y-2">
+            <label className="block text-sm font-medium">Roles</label>
+            <div className="space-y-2">
+              {['ROLE_ADMIN', 'ROLE_CLERK', 'ROLE_TEACHER', 'ROLE_CLASS_TEACHER', 'ROLE_USER'].map((role) => (
+                <div key={role} className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id={role}
+                    checked={selectedRoles?.includes(role) || false}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedRoles([...selectedRoles, role]);
+                      } else {
+                        setSelectedRoles(selectedRoles.filter(r => r !== role));
+                      }
+                    }}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor={role} className="ml-2 block text-sm text-gray-900">
+                    {role.replace('ROLE_', '')}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="flex justify-end space-x-3">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsRoleUpdateModalOpen(false);
+                setSelectedUser(null);
+                setSelectedRoles([]);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleUpdateRoles}
+              disabled={selectedRoles.length === 0}
+            >
+              Update Roles
+            </Button>
+          </div>
+        </div>
+      </Modal>

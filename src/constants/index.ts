@@ -156,6 +156,8 @@ export const ROUTES = {
   FEES_PAYMENT: '/app/fees/payment',
   FEES_STATUS: '/app/fees/status',
   FEES_REPORTS: '/app/fees/reports',
+  SECTIONS: '/app/sections',
+  USERS: '/app/users',
   PROFILE: '/app/profile',
   SETTINGS: '/app/settings'
 } as const;

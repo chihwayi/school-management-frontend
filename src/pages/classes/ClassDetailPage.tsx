@@ -41,24 +41,34 @@ const ClassDetailPage: React.FC = () => {
 
     try {
       setLoading(true);
-      const [classData, studentsData] = await Promise.all([
-        classService.getClassGroupById(parseInt(id)),
-        classService.getStudentsInClass(parseInt(id))
-      ]);
       
-      setClassGroup(classData);
-      setStudents(studentsData);
-      
-      // Load attendance for today
-      loadAttendanceForDate(selectedDate);
-      
-      // Load reports if we have the class data
-      if (classData) {
+      // Load class data
+      try {
+        const classData = await classService.getClassGroupById(parseInt(id));
+        console.log('Class data loaded:', classData);
+        setClassGroup(classData);
+        
+        // Load reports if we have the class data
         loadReports(classData.id, selectedTerm, selectedYear);
+      } catch (error) {
+        console.error('Error loading class:', error);
+        toast.error('Failed to load class details');
+      }
+      
+      // Load students separately
+      try {
+        const studentsData = await classService.getStudentsInClass(parseInt(id));
+        console.log('Students data loaded:', studentsData);
+        setStudents(studentsData);
+        
+        // Load attendance for today
+        loadAttendanceForDate(selectedDate);
+      } catch (error) {
+        console.error('Error loading students:', error);
+        toast.error('Failed to load students');
       }
     } catch (error) {
       toast.error('Failed to load class details');
-      navigate('/classes');
     } finally {
       setLoading(false);
     }
@@ -74,6 +84,7 @@ const ClassDetailPage: React.FC = () => {
       );
       setAttendance(filteredAttendance);
     } catch (error) {
+      console.error('Error loading attendance:', error);
       toast.error('Failed to load attendance');
     }
   };
@@ -83,6 +94,7 @@ const ClassDetailPage: React.FC = () => {
       const reportsData = await reportService.getClassReports(classId, term, year);
       setReports(reportsData);
     } catch (error) {
+      console.error('Error loading reports:', error);
       toast.error('Failed to load reports');
     }
   };
@@ -180,7 +192,7 @@ const ClassDetailPage: React.FC = () => {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => navigate(`/students/${student.id}`)}
+          onClick={() => navigate(`/app/students/${student.id}`)}
         >
           View
         </Button>
@@ -227,7 +239,7 @@ const ClassDetailPage: React.FC = () => {
         <div className="flex items-center space-x-4">
           <Button
             variant="outline"
-            onClick={() => navigate('/classes')}
+            onClick={() => navigate('/app/classes')}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back

@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useQuery } from '@tanstack/react-query';
 import { User, Users, BookOpen, Plus, Trash2, Heart } from 'lucide-react';
-import type { StudentRegistrationDTO, GuardianDTO, Subject } from '../../types';
+import type { StudentRegistrationDTO, GuardianDTO, Subject, Section } from '../../types';
 import { Button, Input, Card, Select } from '../ui';
 import { FORMS, LEVELS } from '../../types';
+import { sectionService } from '../../services/sectionService';
+import { getCurrentAcademicYear } from '../../utils';
 
 interface StudentRegistrationFormProps {
   onSubmit: (data: StudentRegistrationDTO, guardians: GuardianDTO[]) => Promise<void>;
   subjects: Subject[];
-  sections: string[];
+  initialData?: Student;
   isLoading?: boolean;
   error?: string;
 }
@@ -16,19 +19,32 @@ interface StudentRegistrationFormProps {
 const StudentRegistrationForm: React.FC<StudentRegistrationFormProps> = ({
   onSubmit,
   subjects,
-  sections,
+  initialData,
   isLoading,
   error
 }) => {
-  const [guardians, setGuardians] = useState<GuardianDTO[]>([
-    {
-      name: '',
-      relationship: '',
-      phoneNumber: '',
-      whatsappNumber: '',
-      primaryGuardian: true
-    }
-  ]);
+  const { data: sections } = useQuery({
+    queryKey: ['sections-active'],
+    queryFn: sectionService.getActiveSections,
+  });
+  const [guardians, setGuardians] = useState<GuardianDTO[]>(
+    initialData?.guardians?.length ? 
+      initialData.guardians.map(g => ({
+        id: g.id,
+        name: g.name,
+        relationship: g.relationship,
+        phoneNumber: g.phoneNumber,
+        whatsappNumber: g.whatsappNumber,
+        primaryGuardian: g.primaryGuardian
+      })) : 
+      [{
+        name: '',
+        relationship: '',
+        phoneNumber: '',
+        whatsappNumber: '',
+        primaryGuardian: true
+      }]
+  );
 
   const {
     register,
@@ -36,12 +52,25 @@ const StudentRegistrationForm: React.FC<StudentRegistrationFormProps> = ({
     formState: { errors },
     watch,
     setValue
-  } = useForm<StudentRegistrationDTO & { subjectIds: number[] }>();
+  } = useForm<StudentRegistrationDTO & { subjectIds: number[] }>({
+    defaultValues: initialData ? {
+      firstName: initialData.firstName,
+      lastName: initialData.lastName,
+      studentId: initialData.studentId,
+      form: initialData.form,
+      section: initialData.section,
+      level: initialData.level,
+      academicYear: initialData.academicYear || getCurrentAcademicYear()
+    } : {
+      academicYear: getCurrentAcademicYear()
+    }
+  });
 
   const selectedLevel = watch('level');
   const selectedForm = watch('form');
 
-  const availableForms = selectedLevel === LEVELS.O_LEVEL ? FORMS.O_LEVEL : FORMS.A_LEVEL;
+  const availableForms = selectedLevel === LEVELS.O_LEVEL ? FORMS.O_LEVEL : 
+                        selectedLevel === LEVELS.A_LEVEL ? FORMS.A_LEVEL : [];
   const availableSubjects = subjects.filter(subject => subject.level === selectedLevel);
 
   const addGuardian = () => {
@@ -83,6 +112,8 @@ const StudentRegistrationForm: React.FC<StudentRegistrationFormProps> = ({
       throw new Error('At least one guardian is required');
     }
 
+    console.log('Form data being submitted:', { ...studentData, subjectIds });
+    
     try {
       await onSubmit({ ...studentData, subjectIds }, validGuardians);
     } catch (error) {
@@ -143,7 +174,10 @@ const StudentRegistrationForm: React.FC<StudentRegistrationFormProps> = ({
               label="Form"
               {...register('form', { required: 'Form is required' })}
               error={errors.form?.message}
-              options={availableForms.map(form => ({ value: form, label: form }))}
+              options={[
+                { value: '', label: 'Select form' },
+                ...availableForms.map(form => ({ value: form, label: form }))
+              ]}
               placeholder="Select form"
               disabled={!selectedLevel}
             />
@@ -152,8 +186,18 @@ const StudentRegistrationForm: React.FC<StudentRegistrationFormProps> = ({
               label="Section"
               {...register('section', { required: 'Section is required' })}
               error={errors.section?.message}
-              options={sections.map(section => ({ value: section, label: section }))}
+              options={[
+                { value: '', label: 'Select section' },
+                ...(sections || []).map(section => ({ value: section.name, label: section.name }))
+              ]}
               placeholder="Select section"
+            />
+            
+            <Input
+              label="Academic Year"
+              {...register('academicYear', { required: 'Academic year is required' })}
+              error={errors.academicYear?.message}
+              placeholder="e.g., 2025"
             />
           </div>
         </div>

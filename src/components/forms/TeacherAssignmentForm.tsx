@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { useQuery } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import { Button, Select } from '../ui';
-import type { TeacherAssignmentDTO, Teacher, Subject } from '../../types';
+import type { TeacherAssignmentDTO, Teacher, Subject, Section } from '../../types';
 import { FORMS, LEVELS } from '../../types';
+import { sectionService } from '../../services/sectionService';
 
 interface TeacherAssignmentFormProps {
   onSubmit: (data: TeacherAssignmentDTO) => Promise<void>;
   onCancel: () => void;
   teachers: Teacher[];
   subjects: Subject[];
+  selectedTeacher?: Teacher | null;
   isLoading?: boolean;
 }
 
@@ -18,11 +21,17 @@ const TeacherAssignmentForm: React.FC<TeacherAssignmentFormProps> = ({
   onCancel,
   teachers,
   subjects,
+  selectedTeacher,
   isLoading = false
 }) => {
   const [selectedLevel, setSelectedLevel] = useState<string>('');
   const [availableForms, setAvailableForms] = useState<string[]>([]);
   const [availableSubjects, setAvailableSubjects] = useState<Subject[]>([]);
+
+  const { data: sections } = useQuery({
+    queryKey: ['sections-active'],
+    queryFn: sectionService.getActiveSections,
+  });
 
   const {
     register,
@@ -33,13 +42,20 @@ const TeacherAssignmentForm: React.FC<TeacherAssignmentFormProps> = ({
     setValue
   } = useForm<TeacherAssignmentDTO>({
     defaultValues: {
-      teacherId: 0,
+      teacherId: selectedTeacher?.id || 0,
       subjectId: 0,
       form: '',
       section: '',
       academicYear: new Date().getFullYear().toString()
     }
   });
+
+  // Set selected teacher when component mounts
+  useEffect(() => {
+    if (selectedTeacher) {
+      setValue('teacherId', selectedTeacher.id);
+    }
+  }, [selectedTeacher, setValue]);
 
   const watchedForm = watch('form');
   const watchedSubject = watch('subjectId');
@@ -85,34 +101,38 @@ const TeacherAssignmentForm: React.FC<TeacherAssignmentFormProps> = ({
     }
   };
 
-  const teacherOptions = teachers.map(teacher => ({
-    value: teacher.id.toString(),
-    label: `${teacher.firstName} ${teacher.lastName} (${teacher.employeeId})`
-  }));
+  const teacherOptions = [
+    { value: '', label: 'Select teacher' },
+    ...teachers.map(teacher => ({
+      value: teacher.id.toString(),
+      label: `${teacher.firstName} ${teacher.lastName} (${teacher.employeeId})`
+    }))
+  ];
 
-  const subjectOptions = availableSubjects.map(subject => ({
-    value: subject.id.toString(),
-    label: `${subject.name} (${subject.code})`
-  }));
+  const subjectOptions = [
+    { value: '', label: 'Select subject' },
+    ...availableSubjects.map(subject => ({
+      value: subject.id.toString(),
+      label: `${subject.name} (${subject.code})`
+    }))
+  ];
 
-  const formOptions = [...FORMS.O_LEVEL, ...FORMS.A_LEVEL].map(form => ({
-    value: form,
-    label: form
-  }));
+  const formOptions = [
+    { value: '', label: 'Select form' },
+    ...[...FORMS.O_LEVEL, ...FORMS.A_LEVEL].map(form => ({
+      value: form,
+      label: form
+    }))
+  ];
 
   const sectionOptions = [
-    { value: 'A', label: 'A' },
-    { value: 'B', label: 'B' },
-    { value: 'C', label: 'C' },
-    { value: 'D', label: 'D' },
-    { value: 'Blue', label: 'Blue' },
-    { value: 'Green', label: 'Green' },
-    { value: 'Red', label: 'Red' },
-    { value: 'Yellow', label: 'Yellow' }
+    { value: '', label: 'Select section' },
+    ...(sections || []).map(section => ({ value: section.name, label: section.name }))
   ];
 
   const currentYear = new Date().getFullYear();
   const academicYearOptions = [
+    { value: '', label: 'Select academic year' },
     { value: currentYear.toString(), label: currentYear.toString() },
     { value: (currentYear + 1).toString(), label: (currentYear + 1).toString() }
   ];

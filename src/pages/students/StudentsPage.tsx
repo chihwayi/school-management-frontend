@@ -4,7 +4,8 @@ import { studentService } from '../../services/studentService';
 import { LEVELS, FORMS } from '../../types';
 import type { Student } from '../../types';
 import { Card, Button, Input, Select, Table, Modal } from '../../components/ui';
-import { StudentRegistrationForm } from '../../components/forms';
+import StudentCreateForm from '../../components/forms/StudentCreateForm';
+import StudentEditForm from '../../components/forms/StudentEditForm';
 import { Plus, Search, Filter, Edit, Trash2, Eye } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
@@ -48,22 +49,28 @@ const StudentsPage: React.FC = () => {
     }
   };
 
-  const handleFormSubmit = async (studentData: any, guardians: any[]) => {
+  const handleCreateStudent = async (studentData: any, guardians: any[]) => {
     try {
-      if (selectedStudent) {
-        // Update existing student
-        await studentService.updateStudent(selectedStudent.id, studentData);
-        toast.success('Student updated successfully');
-      } else {
-        // Create new student
-        await studentService.createStudent({ ...studentData, guardians });
-        toast.success('Student registered successfully');
-      }
+      await studentService.createStudent({ ...studentData, guardians });
+      toast.success('Student registered successfully');
       setIsModalOpen(false);
-      setSelectedStudent(null);
       await loadStudents();
     } catch (error) {
-      toast.error('Failed to save student');
+      toast.error('Failed to create student');
+    }
+  };
+
+  const handleEditStudent = async (studentData: any) => {
+    try {
+      if (selectedStudent) {
+        await studentService.updateStudent(selectedStudent.id, studentData);
+        toast.success('Student updated successfully');
+        setIsModalOpen(false);
+        setSelectedStudent(null);
+        await loadStudents();
+      }
+    } catch (error) {
+      toast.error('Failed to update student');
     }
   };
 
@@ -93,7 +100,7 @@ const StudentsPage: React.FC = () => {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => navigate(`/students/${student.id}`)}
+          onClick={() => navigate(`/app/students/${student.id}`)}
         >
           <Eye className="w-4 h-4" />
         </Button>
@@ -152,14 +159,15 @@ const StudentsPage: React.FC = () => {
             <Select
               value={formFilter}
               onChange={(e) => setFormFilter(e.target.value)}
-              options={[]} // Add this line to satisfy the type requirement
+              options={[
+                { value: '', label: 'All Forms' },
+                ...[...FORMS.O_LEVEL, ...FORMS.A_LEVEL].map(form => ({
+                  value: form,
+                  label: form
+                }))
+              ]}
               placeholder="Filter by form"
-            >
-              <option value="">All Forms</option>
-              {[...FORMS.O_LEVEL, ...FORMS.A_LEVEL].map(form => (
-                <option key={form} value={form}>{form}</option>
-              ))}
-            </Select>
+            />
           </div>
         </div>
       </Card>
@@ -216,11 +224,21 @@ const StudentsPage: React.FC = () => {
         }}
         title={selectedStudent ? 'Edit Student' : 'Add New Student'}
       >
-        <StudentRegistrationForm
-          onSubmit={handleFormSubmit}
-          subjects={[]}
-          sections={['A', 'B', 'C', 'D']}
-        />
+        {selectedStudent ? (
+          <StudentEditForm
+            student={selectedStudent}
+            onSubmit={handleEditStudent}
+            onCancel={() => {
+              setIsModalOpen(false);
+              setSelectedStudent(null);
+            }}
+          />
+        ) : (
+          <StudentCreateForm
+            onSubmit={handleCreateStudent}
+            subjects={[]}
+          />
+        )}
       </Modal>
     </div>
   );

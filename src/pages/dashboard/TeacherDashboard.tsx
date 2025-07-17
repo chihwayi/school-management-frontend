@@ -1,12 +1,12 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { 
-  BookOpen, 
-  Users, 
-  ClipboardList, 
-  FileText, 
-  Calendar, 
+import {
+  BookOpen,
+  Users,
+  ClipboardList,
+  FileText,
+  Calendar,
   TrendingUp,
   MessageSquare,
   CheckCircle,
@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 
 import { Card, Button, Badge } from '../../components/ui';
-import  LoadingSpinner  from '../../components/common/LoadingSpinner';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
 import { teacherService } from '../../services/teacherService';
 import { useAuth } from '../../hooks/useAuth';
 import { formatRoleName } from '../../utils';
@@ -33,40 +33,32 @@ const TeacherDashboard: React.FC = () => {
   const { data: teacher, isLoading: teacherLoading } = useQuery({
     queryKey: ['current-teacher'],
     queryFn: teacherService.getCurrentTeacher,
+    retry: false
   });
 
   // Fetch teacher assignments
   const { data: assignments, isLoading: assignmentsLoading } = useQuery({
     queryKey: ['teacher-assignments'],
     queryFn: teacherService.getAssignedSubjectsAndClasses,
+    retry: false
   });
 
   const isLoading = teacherLoading || assignmentsLoading;
 
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
-
   // Calculate stats - always call useMemo to maintain hook order
   const stats = React.useMemo(() => {
-    if (!assignments) {
-      return {
-        totalAssignments: 0,
-        uniqueSubjects: 0,
-        uniqueClasses: 0,
-        totalStudents: 0,
-      };
-    }
-    
-    const totalAssignments = assignments.length;
-    const uniqueSubjects = new Set(assignments.map(a => a.subject.id)).size;
-    const uniqueClasses = new Set(assignments.map(a => `${a.form}-${a.section}`)).size;
-    const totalStudents = assignments.reduce((sum, assignment) => {
-      // This would need to be calculated based on actual class sizes
-      // For now, we'll use a placeholder
-      return sum + 25; // Assuming average class size of 25
+    // Ensure assignments is always an array to prevent conditional logic
+    const safeAssignments = Array.isArray(assignments) ? assignments : [];
+
+    const totalAssignments = safeAssignments.length;
+    const uniqueSubjects = safeAssignments.length > 0 ?
+      new Set(safeAssignments.map((a: any) => a.subjectId).filter(Boolean)).size : 0;
+    const uniqueClasses = safeAssignments.length > 0 ?
+      new Set(safeAssignments.map((a: any) => `${a.form}-${a.section}`).filter(Boolean)).size : 0;
+    const totalStudents = safeAssignments.reduce((sum: number) => {
+      return sum + 25;
     }, 0);
-    
+
     return {
       totalAssignments,
       uniqueSubjects,
@@ -74,6 +66,10 @@ const TeacherDashboard: React.FC = () => {
       totalStudents,
     };
   }, [assignments]);
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
 
   const quickActions = [
     {
@@ -135,7 +131,7 @@ const TeacherDashboard: React.FC = () => {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
-                Welcome, {teacher?.firstName} {teacher?.lastName}
+                Welcome, {(teacher as any)?.firstName} {(teacher as any)?.lastName}
               </h1>
               <p className="text-gray-600">
                 Teacher Dashboard - {school?.name}
@@ -238,16 +234,16 @@ const TeacherDashboard: React.FC = () => {
           </Button>
         </div>
         <div className="space-y-4">
-          {assignments && assignments?.length > 0 ? (
-            assignments.map((assignment) => (
+          {Array.isArray(assignments) && assignments.length > 0 ? (
+            assignments.map((assignment: any) => (
               <div key={assignment.id} className="border rounded-lg p-4">
                 <div className="flex items-center justify-between mb-2">
                   <div>
                     <h3 className="font-medium text-gray-900">
-                      {assignment.subject.name}
+                      {assignment.subjectName}
                     </h3>
                     <p className="text-sm text-gray-600">
-                      Code: {assignment.subject.code} | Category: {assignment.subject.category}
+                      Code: {assignment.subjectCode}
                     </p>
                   </div>
                   <div className="flex items-center space-x-2">
@@ -259,9 +255,7 @@ const TeacherDashboard: React.FC = () => {
                     </Badge>
                   </div>
                 </div>
-                <p className="text-sm text-gray-600 mb-3">
-                  Level: {assignment.subject.level}
-                </p>
+
                 <div className="flex space-x-2">
                   <Button
                     size="sm"
@@ -320,45 +314,8 @@ const TeacherDashboard: React.FC = () => {
         </div>
       </Card>
 
-      {/* Subject Summary */}
-      <Card className="p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Subject Summary</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {assignments?.reduce((acc, assignment) => {
-            const existingSubject = acc.find(s => s.id === assignment.subject.id);
-            if (existingSubject) {
-              existingSubject.classes.push(`${assignment.form} ${assignment.section}`);
-            } else {
-              acc.push({
-                id: assignment.subject.id,
-                name: assignment.subject.name,
-                code: assignment.subject.code,
-                category: assignment.subject.category,
-                level: assignment.subject.level,
-                classes: [`${assignment.form} ${assignment.section}`]
-              });
-            }
-            return acc;
-          }, [] as any[])?.map((subject) => (
-            <div key={subject.id} className="border rounded-lg p-4">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-medium text-gray-900">{subject.name}</h3>
-                <Badge variant="info">{subject.code}</Badge>
-              </div>
-              <p className="text-sm text-gray-600 mb-2">
-                {subject.category.replace(/_/g, ' ')} | {subject.level}
-              </p>
-              <div className="flex flex-wrap gap-1">
-                {subject.classes.map((cls: string, idx: number) => (
-                  <Badge key={idx} variant="success" className="text-xs">
-                    {cls}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </Card>
+
+
     </div>
   );
 };

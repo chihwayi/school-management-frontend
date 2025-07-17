@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth, useRoleCheck } from '../../hooks/useAuth';
 import { teacherService } from '../../services/teacherService';
-import type { Teacher } from '../../types';
+import { subjectService } from '../../services/subjectService';
+import type { Teacher, Subject } from '../../types';
 import { Card, Button, Input, Table, Modal } from '../../components/ui';
 import { TeacherRegistrationForm, TeacherAssignmentForm } from '../../components/forms';
+import TeacherEditForm from '../../components/forms/TeacherEditForm';
 import { Plus, Search, Edit, Trash2, Eye, UserPlus } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
@@ -13,6 +15,7 @@ const TeachersPage: React.FC = () => {
   const { canManageTeachers } = useRoleCheck();
   const navigate = useNavigate();
   const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -22,17 +25,29 @@ const TeachersPage: React.FC = () => {
 
   useEffect(() => {
     loadTeachers();
+    loadSubjects();
   }, []);
 
   const loadTeachers = async () => {
     try {
       setLoading(true);
       const data = await teacherService.getAllTeachers();
+      console.log('Teachers data:', data);
       setTeachers(data);
     } catch (error) {
+      console.error('Error loading teachers:', error);
       toast.error('Failed to load teachers');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadSubjects = async () => {
+    try {
+      const data = await subjectService.getAllSubjects();
+      setSubjects(data);
+    } catch (error) {
+      toast.error('Failed to load subjects');
     }
   };
 
@@ -77,12 +92,12 @@ const TeachersPage: React.FC = () => {
     }
   };
 
-  const filteredTeachers = teachers.filter(teacher => {
+  const filteredTeachers = Array.isArray(teachers) ? teachers.filter(teacher => {
     const fullName = `${teacher.firstName} ${teacher.lastName}`;
     return fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
            teacher.employeeId.toLowerCase().includes(searchTerm.toLowerCase()) ||
            (teacher.user?.email || '').toLowerCase().includes(searchTerm.toLowerCase());
-  });
+  }) : [];
 
 
 
@@ -91,13 +106,19 @@ const TeachersPage: React.FC = () => {
     firstName: teacher.firstName,
     lastName: teacher.lastName,
     email: teacher.user?.email || 'N/A',
-    roles: teacher.user?.roles?.map(role => role.name.replace('ROLE_', '')).join(', ') || 'N/A',
+    roles: teacher.user?.roles ? (
+      Array.isArray(teacher.user.roles) ? 
+        teacher.user.roles.map(role => 
+          typeof role === 'string' ? role.replace('ROLE_', '') : 
+          typeof role.name === 'string' ? role.name.replace('ROLE_', '') : ''
+        ).filter(Boolean).join(', ') : 'N/A'
+    ) : 'N/A',
     actions: (
       <div className="flex space-x-2">
         <Button
           variant="outline"
           size="sm"
-          onClick={() => navigate(`/teachers/${teacher.id}`)}
+          onClick={() => navigate(`/app/teachers/${teacher.id}`)}
         >
           <Eye className="w-4 h-4" />
         </Button>
@@ -213,9 +234,20 @@ const TeachersPage: React.FC = () => {
         }}
         title={selectedTeacher ? 'Edit Teacher' : 'Add New Teacher'}
       >
-        <TeacherRegistrationForm
-          onSubmit={handleFormSubmit}
-        />
+        {selectedTeacher ? (
+          <TeacherEditForm
+            teacher={selectedTeacher}
+            onSubmit={handleFormSubmit}
+            onCancel={() => {
+              setIsModalOpen(false);
+              setSelectedTeacher(null);
+            }}
+          />
+        ) : (
+          <TeacherRegistrationForm
+            onSubmit={handleFormSubmit}
+          />
+        )}
       </Modal>
 
       <Modal
@@ -228,7 +260,8 @@ const TeachersPage: React.FC = () => {
       >
         <TeacherAssignmentForm
           teachers={teachers}
-          subjects={[]}
+          subjects={subjects}
+          selectedTeacher={selectedTeacherForAssignment}
           onSubmit={handleAssignmentSubmit}
           onCancel={() => {
             setIsAssignmentModalOpen(false);

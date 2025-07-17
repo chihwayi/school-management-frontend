@@ -104,6 +104,7 @@ export interface StudentRegistrationDTO {
   form: string;
   section: string;
   level: string;
+  academicYear: string;
   subjectIds?: number[];
 }
 
@@ -432,3 +433,6 @@ export interface Theme {
 
 // Fee Payment Types
 export * from './feePayment';
+
+// Section Types
+export * from './section';

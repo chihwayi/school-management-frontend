@@ -30,6 +30,8 @@ import { AttendancePage, AttendanceDetailPage } from './pages/attendance';
 import { ReportsPage, ReportDetailPage } from './pages/reports';
 import { GuardiansPage, GuardianDetailPage } from './pages/guardians';
 import { FeePaymentPage, PaymentStatusPage, FinancialReportsPage } from './pages/fees';
+import SectionsPage from './pages/sections/SectionsPage';
+import { UserManagementPage } from './pages/users';
 
 // Hooks
 import { useAuth } from './hooks/useAuth';
@@ -39,10 +41,12 @@ import { ERole } from './types';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 1,
+      retry: false,
       staleTime: 5 * 60 * 1000, // 5 minutes
       gcTime: 10 * 60 * 1000, // 10 minutes
       refetchOnWindowFocus: false,
+      refetchOnMount: false,
+      refetchOnReconnect: false,
     },
   },
 });
@@ -124,11 +128,14 @@ const App: React.FC = () => {
 
                 {/* Student Management */}
                 <Route path="students" element={<StudentsPage />} />
+                <Route path="students" element={<StudentsPage />} />
                 <Route path="students/:id" element={<StudentDetailPage />} />
+                <Route path="students/:id/guardians/add" element={<div>Add Guardian - Coming Soon</div>} />
 
                 {/* Teacher Management */}
                 <Route path="teachers" element={<TeachersPage />} />
                 <Route path="teachers/:id" element={<TeacherDetailPage />} />
+                <Route path="teachers/:id/edit" element={<TeachersPage />} />
 
                 {/* Class Management */}
                 <Route path="classes" element={<ClassesPage />} />
@@ -158,6 +165,12 @@ const App: React.FC = () => {
                 <Route path="fees/payment" element={<FeePaymentPage />} />
                 <Route path="fees/status" element={<PaymentStatusPage />} />
                 <Route path="fees/reports" element={<FinancialReportsPage />} />
+
+                {/* Sections Management */}
+                <Route path="sections" element={<SectionsPage />} />
+                
+                {/* User Management */}
+                <Route path="users" element={<UserManagementPage />} />
 
                 {/* Catch all - redirect to dashboard */}
                 <Route path="*" element={<Navigate to="/app" replace />} />

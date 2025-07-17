@@ -63,7 +63,7 @@ const StudentDetailPage: React.FC = () => {
       <Button
         variant="outline"
         size="sm"
-        onClick={() => navigate(`/reports/${report.id}`)}
+        onClick={() => navigate(`/app/reports/${report.id}`)}
       >
         View Report
       </Button>
@@ -75,7 +75,7 @@ const StudentDetailPage: React.FC = () => {
       <div className="flex items-center gap-4 mb-6">
         <Button
           variant="outline"
-          onClick={() => navigate('/students')}
+          onClick={() => navigate('/app/students')}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Students
@@ -97,7 +97,7 @@ const StudentDetailPage: React.FC = () => {
                 </div>
                 <Button
                   variant="outline"
-                  onClick={() => navigate(`/students/${student.id}/edit`)}
+                  onClick={() => navigate(`/app/students/${student.id}/edit`)}
                 >
                   <Edit className="w-4 h-4 mr-2" />
                   Edit
@@ -170,7 +170,7 @@ const StudentDetailPage: React.FC = () => {
                 <h3 className="text-lg font-semibold">Guardians</h3>
                 <Button
                   size="sm"
-                  onClick={() => navigate(`/students/${student.id}/guardians/add`)}
+                  onClick={() => navigate(`/app/students/${student.id}/guardians/add`)}
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Add Guardian

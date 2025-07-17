@@ -2,15 +2,13 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { SchoolSetupForm } from '../../components/forms';
 import { useSchoolStore } from '../../store/schoolStore';
-import { useAuth } from '../../hooks/useAuth';
 import  LoadingSpinner from '../../components/common/LoadingSpinner';
 import { GraduationCap, Settings, School } from 'lucide-react';
 
 const SchoolSetupPage: React.FC = () => {
-  const { isSchoolConfigured, isLoading } = useAuth();
-  const { setupSchool, isLoading: setupLoading, error } = useSchoolStore();
+  const { isConfigured: isSchoolConfigured, setupSchool, isLoading: setupLoading, error } = useSchoolStore();
 
-  if (isLoading || setupLoading) {
+  if (setupLoading) {
     return <LoadingSpinner />;
   }
 

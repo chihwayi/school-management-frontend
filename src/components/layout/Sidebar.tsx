@@ -65,6 +65,20 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             show: isAdmin() || isClerk()
         },
         {
+            name: 'Sections',
+            href: ROUTES.SECTIONS,
+            icon: BookOpen,
+            current: location.pathname === ROUTES.SECTIONS,
+            show: isAdmin() || isClerk()
+        },
+        {
+            name: 'User Management',
+            href: '/app/users',
+            icon: Shield,
+            current: location.pathname === '/app/users',
+            show: isAdmin()
+        },
+        {
             name: 'Subjects',
             href: ROUTES.SUBJECTS,
             icon: FileText,
@@ -134,14 +148,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 <div className="flex items-center">
                     {theme?.logoPath ? (
                         <img
-                            src={getFullImageUrl(theme.logoPath)}
+                            src={getFullImageUrl(theme.logoPath) || ''}
                             alt={school?.name || 'School Logo'}
                             className="h-8 w-8 rounded-full object-cover"
                             onError={(e) => {
                                 console.error('Failed to load sidebar logo:', theme.logoPath);
                                 e.currentTarget.style.display = 'none';
                             }}
-                        />
+                        /> 
                     ) : (
                         <div 
                             className="h-8 w-8 rounded-full flex items-center justify-center"

@@ -55,14 +55,24 @@ export const useSchoolStore = create<SchoolState>()(
             error: null
           });
         } catch (error: any) {
-          set({
-            school: null,
-            isConfigured: false,
-            theme: null,
-            isLoading: false,
-            error: error.response?.data?.message || 'Failed to check school configuration'
-          });
-          throw error;
+          // If it's a 404 or no school found, set as not configured without error
+          if (error.response?.status === 404 || error.response?.status === 500) {
+            set({
+              school: null,
+              isConfigured: false,
+              theme: null,
+              isLoading: false,
+              error: null // Don't set error for expected 404
+            });
+          } else {
+            set({
+              school: null,
+              isConfigured: false,
+              theme: null,
+              isLoading: false,
+              error: error.response?.data?.message || 'Failed to check school configuration'
+            });
+          }
         }
       },
 

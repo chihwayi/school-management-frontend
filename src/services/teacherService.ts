@@ -3,13 +3,53 @@ import type { Teacher, TeacherRegistrationDTO, TeacherSubjectClass, ClassGroup }
 
 export const teacherService = {
   getAllTeachers: async (): Promise<Teacher[]> => {
-    const response = await api.get('/teachers/all');
-    return response.data;
+    const response = await api.get('/teachers/all?includeUser=true');
+    
+    // Fix circular reference by extracting only needed data
+    const cleanTeachers = response.data.map((teacher: any) => ({
+      id: teacher.id,
+      firstName: teacher.firstName,
+      lastName: teacher.lastName,
+      employeeId: teacher.employeeId,
+      user: teacher.user ? {
+        id: teacher.user.id,
+        username: teacher.user.username,
+        email: teacher.user.email,
+        enabled: teacher.user.enabled,
+        roles: teacher.user.roles
+      } : null
+    }));
+    
+    return cleanTeachers;
   },
 
   getTeacherById: async (id: number): Promise<Teacher> => {
-    const response = await api.get(`/teachers/${id}`);
-    return response.data;
+    try {
+      const response = await api.get(`/teachers/${id}`);
+      
+      // Fix circular reference by extracting only needed data
+      const teacher = response.data;
+      const cleanTeacher = {
+        id: teacher.id,
+        firstName: teacher.firstName,
+        lastName: teacher.lastName,
+        employeeId: teacher.employeeId,
+        user: teacher.user ? {
+          id: teacher.user.id,
+          username: teacher.user.username,
+          email: teacher.user.email,
+          enabled: teacher.user.enabled,
+          roles: teacher.user.roles
+        } : null,
+        subjectClassAssignments: teacher.subjectClassAssignments,
+        supervisedClasses: teacher.supervisedClasses
+      };
+      
+      return cleanTeacher;
+    } catch (error) {
+      console.error('Error fetching teacher:', error);
+      throw error;
+    }
   },
 
   createTeacher: async (teacherData: TeacherRegistrationDTO): Promise<Teacher> => {

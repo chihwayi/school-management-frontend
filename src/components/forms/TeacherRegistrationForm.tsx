@@ -7,12 +7,14 @@ import { validateEmail, validatePassword } from '../../utils/validation';
 
 interface TeacherRegistrationFormProps {
   onSubmit: (data: TeacherRegistrationDTO) => Promise<void>;
+  initialData?: any;
   isLoading?: boolean;
   error?: string;
 }
 
 const TeacherRegistrationForm: React.FC<TeacherRegistrationFormProps> = ({
   onSubmit,
+  initialData,
   isLoading,
   error
 }) => {
@@ -21,7 +23,16 @@ const TeacherRegistrationForm: React.FC<TeacherRegistrationFormProps> = ({
     handleSubmit,
     formState: { errors },
     watch
-  } = useForm<TeacherRegistrationDTO>();
+  } = useForm<TeacherRegistrationDTO>({
+    defaultValues: initialData ? {
+      firstName: initialData.firstName,
+      lastName: initialData.lastName,
+      employeeId: initialData.employeeId,
+      username: initialData.user?.username || '',
+      email: initialData.user?.email || '',
+      password: '' // Don't pre-fill password for security
+    } : {}
+  });
 
   const password = watch('password');
 
@@ -155,7 +166,10 @@ const TeacherRegistrationForm: React.FC<TeacherRegistrationFormProps> = ({
           disabled={isLoading}
           className="w-full md:w-auto"
         >
-          {isLoading ? 'Creating Account...' : 'Create Teacher Account'}
+          {isLoading ? 
+            (initialData ? 'Updating...' : 'Creating Account...') : 
+            (initialData ? 'Update Teacher' : 'Create Teacher Account')
+          }
         </Button>
       </div>
     </form>

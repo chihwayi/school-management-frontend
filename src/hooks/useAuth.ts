@@ -15,17 +15,8 @@ export const useAuth = () => {
     authStore.checkAuth();
   }, []);
 
-  // Check school configuration on mount (regardless of auth status)
-  useEffect(() => {
-    schoolStore.checkSchoolConfig().catch(console.error);
-  }, []);
-
-  // Re-check school configuration when authenticated
-  useEffect(() => {
-    if (authStore.isAuthenticated && !schoolStore.isConfigured) {
-      schoolStore.checkSchoolConfig().catch(console.error);
-    }
-  }, [authStore.isAuthenticated]);
+  // Only check school config when explicitly needed
+  // Removed automatic check to prevent infinite loops
 
   return {
     // Auth state
@@ -38,10 +29,11 @@ export const useAuth = () => {
     isLoading: authStore.isLoading,
     error: authStore.error,
     
-    // School state
+    // School state  
     school: schoolStore.school,
     isSchoolConfigured: schoolStore.isConfigured,
     theme: schoolStore.theme,
+    schoolError: schoolStore.error,
     
     // Actions
     login: authStore.login,
