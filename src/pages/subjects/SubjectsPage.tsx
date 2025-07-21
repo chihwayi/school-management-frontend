@@ -79,20 +79,23 @@ const SubjectsPage: React.FC = () => {
   };
 
   const handleViewSubject = (subjectId: number) => {
-    navigate(`/subjects/${subjectId}`);
+    navigate(`/app/subjects/${subjectId}`);
   };
 
   const getCategoryBadgeColor = (category: SubjectCategory): string => {
     switch (category) {
+      case SubjectCategory.JUNIOR_SECONDARY_LANGUAGES:
       case SubjectCategory.O_LEVEL_LANGUAGES:
       case SubjectCategory.A_LEVEL_ARTS:
         return 'bg-blue-100 text-blue-800';
+      case SubjectCategory.JUNIOR_SECONDARY_ARTS:
       case SubjectCategory.O_LEVEL_ARTS:
       case SubjectCategory.A_LEVEL_ARTS:
         return 'bg-purple-100 text-purple-800';
       case SubjectCategory.O_LEVEL_COMMERCIALS:
       case SubjectCategory.A_LEVEL_COMMERCIALS:
         return 'bg-green-100 text-green-800';
+      case SubjectCategory.JUNIOR_SECONDARY_SCIENCES:
       case SubjectCategory.O_LEVEL_SCIENCES:
       case SubjectCategory.A_LEVEL_SCIENCES:
         return 'bg-orange-100 text-orange-800';
@@ -102,7 +105,16 @@ const SubjectsPage: React.FC = () => {
   };
 
   const getLevelBadgeColor = (level: string): string => {
-    return level === 'O_LEVEL' ? 'bg-indigo-100 text-indigo-800' : 'bg-red-100 text-red-800';
+    switch (level) {
+      case 'JUNIOR_SECONDARY':
+        return 'bg-teal-100 text-teal-800';
+      case 'O_LEVEL':
+        return 'bg-indigo-100 text-indigo-800';
+      case 'A_LEVEL':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
   };
 
   const filteredSubjects = subjects.filter(subject => {
@@ -118,12 +130,16 @@ const SubjectsPage: React.FC = () => {
 
   const levelOptions = [
     { value: '', label: 'All Levels' },
+    { value: 'JUNIOR_SECONDARY', label: 'Junior Secondary' },
     { value: 'O_LEVEL', label: 'O Level' },
     { value: 'A_LEVEL', label: 'A Level' }
   ];
 
   const categoryOptions = [
     { value: '', label: 'All Categories' },
+    { value: SubjectCategory.JUNIOR_SECONDARY_LANGUAGES, label: 'Junior Secondary Languages' },
+    { value: SubjectCategory.JUNIOR_SECONDARY_ARTS, label: 'Junior Secondary Arts' },
+    { value: SubjectCategory.JUNIOR_SECONDARY_SCIENCES, label: 'Junior Secondary Sciences' },
     { value: SubjectCategory.O_LEVEL_LANGUAGES, label: 'O Level Languages' },
     { value: SubjectCategory.O_LEVEL_ARTS, label: 'O Level Arts' },
     { value: SubjectCategory.O_LEVEL_COMMERCIALS, label: 'O Level Commercials' },
@@ -158,13 +174,24 @@ const SubjectsPage: React.FC = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card className="p-4">
           <div className="flex items-center">
             <BookOpen className="h-8 w-8 text-blue-600" />
             <div className="ml-3">
               <p className="text-sm font-medium text-gray-600">Total Subjects</p>
               <p className="text-2xl font-bold text-gray-900">{subjects.length}</p>
+            </div>
+          </div>
+        </Card>
+        <Card className="p-4">
+          <div className="flex items-center">
+            <BookOpen className="h-8 w-8 text-teal-600" />
+            <div className="ml-3">
+              <p className="text-sm font-medium text-gray-600">Junior Secondary</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {subjects.filter(s => s.level === 'JUNIOR_SECONDARY').length}
+              </p>
             </div>
           </div>
         </Card>

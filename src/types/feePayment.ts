@@ -59,6 +59,8 @@ export interface PaymentReceiptDTO {
   amountPaid: number;
   balance: number;
   paymentDate: string;
+  monthlyFeeAmount: number;
+  paymentStatus: PaymentStatus;
 }
 
 export interface DailyPaymentSummaryDTO {
@@ -86,4 +88,47 @@ export interface FinancialReportDTO {
   totalExpectedRevenue: number;
   classSummaries: ClassFinancialSummaryDTO[];
   dailySummaries: DailyPaymentSummaryDTO[];
+}
+
+export interface StudentPaymentHistoryDTO {
+  studentId: number;
+  studentName: string;
+  className: string;
+  payments: {
+    term: string;
+    month: string;
+    academicYear: string;
+    amountPaid: number;
+    balance: number;
+    paymentDate: string;
+    paymentStatus: PaymentStatus;
+  }[];
+  totalPaid: number;
+  totalBalance: number;
+}
+
+export interface PaymentTrendDTO {
+  date: string;
+  totalAmount: number;
+  transactionCount: number;
+}
+
+export interface ClassComparisonDTO {
+  className: string;
+  totalStudents: number;
+  totalCollected: number;
+  totalOutstanding: number;
+  collectionRate: number;
+  averagePaymentPerStudent: number;
+}
+
+export interface AuditLogDTO {
+  id: number;
+  action: string;
+  description: string;
+  performedBy: string;
+  timestamp: string;
+  paymentId?: number;
+  studentId?: number;
+  amount?: number;
 }

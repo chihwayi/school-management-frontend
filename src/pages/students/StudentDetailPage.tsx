@@ -5,7 +5,8 @@ import { guardianService } from '../../services/guardianService';
 import { reportService } from '../../services/reportService';
 import type { Student, Guardian, Report } from '../../types';
 import { Card, Button, Badge, Table } from '../../components/ui';
-import { ArrowLeft, Edit, Plus, Phone, Mail } from 'lucide-react';
+import { ArrowLeft, Edit, Plus, Phone } from 'lucide-react';
+import { WhatsAppIcon } from '../../components/common';
 import { toast } from 'react-hot-toast';
 
 const StudentDetailPage: React.FC = () => {
@@ -168,13 +169,22 @@ const StudentDetailPage: React.FC = () => {
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold">Guardians</h3>
-                <Button
-                  size="sm"
-                  onClick={() => navigate(`/app/students/${student.id}/guardians/add`)}
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Guardian
-                </Button>
+                <div className="flex space-x-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => navigate(`/app/guardians?studentId=${student.id}`)}
+                  >
+                    Manage Guardians
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => navigate(`/app/guardians?studentId=${student.id}`)}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Guardian
+                  </Button>
+                </div>
               </div>
 
               <div className="space-y-4">
@@ -199,7 +209,7 @@ const StudentDetailPage: React.FC = () => {
                       </div>
                       {guardian.whatsappNumber && (
                         <div className="flex items-center gap-2 text-sm">
-                          <Mail className="w-4 h-4" />
+                          <WhatsAppIcon />
                           {guardian.whatsappNumber}
                         </div>
                       )}

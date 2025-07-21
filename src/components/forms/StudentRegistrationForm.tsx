@@ -69,7 +69,8 @@ const StudentRegistrationForm: React.FC<StudentRegistrationFormProps> = ({
   const selectedLevel = watch('level');
   const selectedForm = watch('form');
 
-  const availableForms = selectedLevel === LEVELS.O_LEVEL ? FORMS.O_LEVEL : 
+  const availableForms = selectedLevel === LEVELS.JUNIOR_SECONDARY ? FORMS.JUNIOR_SECONDARY :
+                        selectedLevel === LEVELS.O_LEVEL ? FORMS.O_LEVEL : 
                         selectedLevel === LEVELS.A_LEVEL ? FORMS.A_LEVEL : [];
   const availableSubjects = subjects.filter(subject => subject.level === selectedLevel);
 
@@ -164,6 +165,7 @@ const StudentRegistrationForm: React.FC<StudentRegistrationFormProps> = ({
               {...register('level', { required: 'Level is required' })}
               error={errors.level?.message}
               options={[
+                { value: LEVELS.JUNIOR_SECONDARY, label: 'Junior Secondary' },
                 { value: LEVELS.O_LEVEL, label: 'O Level' },
                 { value: LEVELS.A_LEVEL, label: 'A Level' }
               ]}
@@ -318,11 +320,18 @@ const StudentRegistrationForm: React.FC<StudentRegistrationFormProps> = ({
                     options={[
                       { value: 'Father', label: 'Father' },
                       { value: 'Mother', label: 'Mother' },
+                      { value: 'Stepfather', label: 'Stepfather' },
+                      { value: 'Stepmother', label: 'Stepmother' },
                       { value: 'Grandfather', label: 'Grandfather' },
                       { value: 'Grandmother', label: 'Grandmother' },
                       { value: 'Uncle', label: 'Uncle' },
                       { value: 'Aunt', label: 'Aunt' },
-                      { value: 'Guardian', label: 'Guardian' },
+                      { value: 'Brother', label: 'Brother' },
+                      { value: 'Sister', label: 'Sister' },
+                      { value: 'Legal Guardian', label: 'Legal Guardian' },
+                      { value: 'Foster Parent', label: 'Foster Parent' },
+                      { value: 'Caregiver', label: 'Caregiver' },
+                      { value: 'Other Relative', label: 'Other Relative' },
                       { value: 'Other', label: 'Other' }
                     ]}
                     placeholder="Select relationship"

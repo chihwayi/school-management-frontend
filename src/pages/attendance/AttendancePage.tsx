@@ -73,12 +73,33 @@ const AttendancePage: React.FC = () => {
     }
   };
 
+  // Track if we've shown the future date message
+  const [shownFutureDateMessage, setShownFutureDateMessage] = useState(false);
+  
   const loadAttendanceForDate = async (date: string) => {
     try {
+      // Check if the selected date is in the future
+      const selectedDateObj = new Date(date);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Reset time part for accurate comparison
+      
+      if (selectedDateObj > today) {
+        if (!shownFutureDateMessage) {
+          toast('Attendance records for future dates are not available');
+          setShownFutureDateMessage(true);
+        }
+        setAttendanceRecords([]);
+        return;
+      }
+      
+      // Reset the flag when not showing a future date
+      setShownFutureDateMessage(false);
+      
       const attendance = await attendanceService.getAttendanceByDate(date);
       setAttendanceRecords(attendance);
     } catch (error) {
       console.error('Error loading attendance for date:', error);
+      toast.error('Failed to load attendance records');
     }
   };
 
@@ -95,8 +116,27 @@ const AttendancePage: React.FC = () => {
 
   const handleMarkAttendance = async (studentId: number, present: boolean) => {
     try {
-      await attendanceService.markAttendance(studentId, selectedDate, present);
-      await loadAttendanceForDate(selectedDate);
+      const response = await attendanceService.markAttendance(studentId, selectedDate, present);
+      
+      // Update attendance records in state directly without reloading from server
+      setAttendanceRecords(prevRecords => {
+        // Find if there's an existing record for this student
+        const existingIndex = prevRecords.findIndex(r => 
+          r.student.id === studentId && 
+          new Date(r.date).toISOString().split('T')[0] === new Date(selectedDate).toISOString().split('T')[0]
+        );
+        
+        if (existingIndex >= 0) {
+          // Update existing record
+          const updatedRecords = [...prevRecords];
+          updatedRecords[existingIndex] = response;
+          return updatedRecords;
+        } else {
+          // Add new record
+          return [...prevRecords, response];
+        }
+      });
+      
       toast.success(`Attendance marked successfully`);
     } catch (error) {
       toast.error('Failed to mark attendance');
@@ -107,12 +147,36 @@ const AttendancePage: React.FC = () => {
   const handleBulkAttendance = async (data: { date: string; attendanceRecords: { studentId: number; present: boolean }[] }) => {
     try {
       setIsLoading(true);
-      const promises = data.attendanceRecords.map(({ studentId, present }) =>
-        attendanceService.markAttendance(studentId, data.date, present)
+      const responses = await Promise.all(
+        data.attendanceRecords.map(({ studentId, present }) =>
+          attendanceService.markAttendance(studentId, data.date, present)
+        )
       );
       
-      await Promise.all(promises);
-      await loadAttendanceForDate(data.date);
+      // Update attendance records in state directly
+      setAttendanceRecords(prevRecords => {
+        const updatedRecords = [...prevRecords];
+        
+        // Process each response and update or add to the records
+        responses.forEach(response => {
+          const studentId = response.student.id;
+          const responseDate = new Date(response.date).toISOString().split('T')[0];
+          
+          const existingIndex = updatedRecords.findIndex(r => 
+            r.student.id === studentId && 
+            new Date(r.date).toISOString().split('T')[0] === responseDate
+          );
+          
+          if (existingIndex >= 0) {
+            updatedRecords[existingIndex] = response;
+          } else {
+            updatedRecords.push(response);
+          }
+        });
+        
+        return updatedRecords;
+      });
+      
       toast.success('Bulk attendance marked successfully');
       setIsModalOpen(false);
     } catch (error) {
@@ -124,18 +188,33 @@ const AttendancePage: React.FC = () => {
   };
 
   const getAttendanceForStudent = (studentId: number) => {
-    return attendanceRecords.find(record => 
-      record.student.id === studentId && 
-      record.date === selectedDate
-    );
+    // Convert date strings to the same format for comparison
+    const formattedSelectedDate = new Date(selectedDate).toISOString().split('T')[0];
+    
+    return attendanceRecords.find(record => {
+      const recordDate = new Date(record.date).toISOString().split('T')[0];
+      return record.student.id === studentId && recordDate === formattedSelectedDate;
+    });
   };
 
   const getAttendanceStats = () => {
-    const todayAttendance = attendanceRecords.filter(record => record.date === selectedDate);
+    // Format the selected date for consistent comparison
+    const formattedSelectedDate = new Date(selectedDate).toISOString().split('T')[0];
+    
+    // Filter attendance records for the selected date with proper date formatting
+    const todayAttendance = attendanceRecords.filter(record => {
+      const recordDate = new Date(record.date).toISOString().split('T')[0];
+      return recordDate === formattedSelectedDate;
+    });
+    
+    // Count present and absent students
     const present = todayAttendance.filter(record => record.present).length;
     const absent = todayAttendance.filter(record => !record.present).length;
     const total = students.length;
-    const unmarked = total - (present + absent);
+    
+    // Calculate unmarked by checking which students don't have attendance records
+    const studentsWithAttendance = new Set(todayAttendance.map(record => record.student.id));
+    const unmarked = students.filter(student => !studentsWithAttendance.has(student.id)).length;
     
     return { present, absent, total, unmarked };
   };
@@ -151,7 +230,14 @@ const AttendancePage: React.FC = () => {
   const stats = getAttendanceStats();
 
   const attendanceTableData = students.map(student => {
-    const attendance = getAttendanceForStudent(student.id);
+    // Get attendance with proper date formatting
+    const formattedSelectedDate = new Date(selectedDate).toISOString().split('T')[0];
+    
+    const attendance = attendanceRecords.find(record => {
+      const recordDate = new Date(record.date).toISOString().split('T')[0];
+      return record.student.id === student.id && recordDate === formattedSelectedDate;
+    });
+    
     return {
       id: student.id,
       name: `${student.firstName} ${student.lastName}`,
@@ -159,7 +245,9 @@ const AttendancePage: React.FC = () => {
       class: `${student.form} ${student.section}`,
       status: attendance ? (attendance.present ? 'Present' : 'Absent') : 'Not Marked',
       markedAt: attendance?.markedAt || '-',
-      markedBy: attendance?.markedBy ? `${attendance.markedBy.firstName} ${attendance.markedBy.lastName}` : '-',
+      markedBy: attendance?.markedBy ? 
+        (typeof attendance.markedBy === 'string' ? attendance.markedBy : 
+         `${attendance.markedBy.firstName || ''} ${attendance.markedBy.lastName || ''}`.trim()) : '-',
       actions: attendance ? 'Marked' : 'Pending'
     };
   });
@@ -302,6 +390,7 @@ const AttendancePage: React.FC = () => {
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
               className="w-auto"
+              max={new Date().toISOString().split('T')[0]} // Prevent selecting future dates
             />
           </div>
 
@@ -337,6 +426,7 @@ const AttendancePage: React.FC = () => {
               value={filterDate}
               onChange={(e) => setFilterDate(e.target.value)}
               className="w-auto"
+              max={new Date().toISOString().split('T')[0]} // Prevent selecting future dates
             />
           </div>
 

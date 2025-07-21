@@ -29,7 +29,7 @@ import { AssessmentsPage, AssessmentDetailPage } from './pages/assessments';
 import { AttendancePage, AttendanceDetailPage } from './pages/attendance';
 import { ReportsPage, ReportDetailPage } from './pages/reports';
 import { GuardiansPage, GuardianDetailPage } from './pages/guardians';
-import { FeePaymentPage, PaymentStatusPage, FinancialReportsPage } from './pages/fees';
+import { FeePaymentPage, PaymentStatusPage, FinancialReportsPage, FeeSettingsPage } from './pages/fees';
 import SectionsPage from './pages/sections/SectionsPage';
 import { UserManagementPage } from './pages/users';
 
@@ -53,7 +53,7 @@ const queryClient = new QueryClient({
 
 // Route Guard Component
 const RouteGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, isSchoolConfigured, isLoading } = useAuth();
+  const { isAuthenticated, isSchoolConfigured, isLoading, resetAuth } = useAuth();
 
   if (isLoading) {
     return <LoadingSpinner />;
@@ -61,6 +61,10 @@ const RouteGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   // Check school setup first, before authentication
   if (!isSchoolConfigured) {
+    // If school is not configured but user is authenticated, reset auth
+    if (isAuthenticated) {
+      resetAuth();
+    }
     return <Navigate to="/setup" replace />;
   }
 
@@ -73,7 +77,7 @@ const RouteGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
 // Root Route Component - handles initial redirect
 const RootRoute: React.FC = () => {
-  const { isAuthenticated, isSchoolConfigured, isLoading } = useAuth();
+  const { isAuthenticated, isSchoolConfigured, isLoading, resetAuth } = useAuth();
 
   if (isLoading) {
     return <LoadingSpinner />;
@@ -81,6 +85,10 @@ const RootRoute: React.FC = () => {
 
   // Check school setup first
   if (!isSchoolConfigured) {
+    // If school is not configured but user is authenticated, reset auth
+    if (isAuthenticated) {
+      resetAuth();
+    }
     return <Navigate to="/setup" replace />;
   }
 
@@ -165,6 +173,7 @@ const App: React.FC = () => {
                 <Route path="fees/payment" element={<FeePaymentPage />} />
                 <Route path="fees/status" element={<PaymentStatusPage />} />
                 <Route path="fees/reports" element={<FinancialReportsPage />} />
+                <Route path="fees/settings" element={<FeeSettingsPage />} />
 
                 {/* Sections Management */}
                 <Route path="sections" element={<SectionsPage />} />

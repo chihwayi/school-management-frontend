@@ -35,7 +35,7 @@ const SubjectForm: React.FC<SubjectFormProps> = ({
   });
 
   const selectedLevel = watch('level');
-  const availableCategories = getSubjectCategoriesForLevel(selectedLevel as 'O_LEVEL' | 'A_LEVEL');
+  const availableCategories = getSubjectCategoriesForLevel(selectedLevel as 'JUNIOR_SECONDARY' | 'O_LEVEL' | 'A_LEVEL');
 
   const handleFormSubmit = async (data: Omit<Subject, 'id'>) => {
     try {
@@ -46,15 +46,7 @@ const SubjectForm: React.FC<SubjectFormProps> = ({
   };
 
   const getCategoryOptions = () => {
-    return availableCategories.map(category => ({
-      value: category,
-      label: category.replace(/_/g, ' ')
-        .replace(/O LEVEL|A LEVEL/, '')
-        .trim()
-        .split(' ')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-        .join(' ')
-    }));
+    return availableCategories;
   };
 
   return (
@@ -96,6 +88,7 @@ const SubjectForm: React.FC<SubjectFormProps> = ({
               {...register('level', { required: 'Level is required' })}
               error={errors.level?.message}
               options={[
+                { value: 'JUNIOR_SECONDARY', label: 'Junior Secondary' },
                 { value: 'O_LEVEL', label: 'O Level' },
                 { value: 'A_LEVEL', label: 'A Level' }
               ]}

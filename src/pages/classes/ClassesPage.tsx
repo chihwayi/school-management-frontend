@@ -8,6 +8,7 @@ import { ClassForm, ClassTeacherAssignmentForm } from '../../components/forms';
 import { Plus, Search, Edit, Trash2, Eye, UserPlus } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { studentService } from '@/services/studentService';
 
 const ClassesPage: React.FC = () => {
   const { isAuthenticated } = useAuth();
@@ -33,10 +34,35 @@ const ClassesPage: React.FC = () => {
   const loadClasses = async () => {
     try {
       setLoading(true);
-      const data = await classService.getAllClassGroups();
-      console.log('Classes loaded:', data);
-      setClasses(data);
+      // Load classes and students in parallel
+      const [classesData, studentsData] = await Promise.all([
+        classService.getAllClassGroups(),
+        studentService.getAllStudents()
+      ]);
+
+      console.log('Raw classes data from API:', classesData);
+
+      // Map classes with student counts
+      const classesWithStudents = classesData.map(classGroup => {
+        // Count students with matching form and section, handling different academic year formats
+        const matchingStudents = studentsData.filter(student =>
+          student.form === classGroup.form &&
+          student.section === classGroup.section &&
+          (student.academicYear === classGroup.academicYear ||
+            student.academicYear.includes(classGroup.academicYear))
+        );
+
+        return {
+          ...classGroup,
+          students: matchingStudents,
+          studentCount: matchingStudents.length
+        };
+      });
+
+      console.log('Processed classes with students:', classesWithStudents);
+      setClasses(classesWithStudents);
     } catch (error) {
+      console.error('Error loading classes:', error);
       toast.error('Failed to load classes');
     } finally {
       setLoading(false);
@@ -66,11 +92,14 @@ const ClassesPage: React.FC = () => {
 
   const handleCreateClass = async (classData: Omit<ClassGroup, 'id'>) => {
     try {
-      await classService.createClassGroup(classData);
+      console.log('Creating class with data:', classData);
+      const result = await classService.createClassGroup(classData);
+      console.log('Class creation result:', result);
       toast.success('Class created successfully');
       setIsModalOpen(false);
       loadClasses();
     } catch (error) {
+      console.error('Error creating class:', error);
       toast.error('Failed to create class');
     }
   };
@@ -91,12 +120,15 @@ const ClassesPage: React.FC = () => {
 
   const handleAssignTeacher = async (data: { teacherId: number; classGroupId: number }) => {
     try {
-      await classService.assignClassTeacher(data.classGroupId, data.teacherId);
+      console.log('Assigning teacher with data:', data);
+      const result = await classService.assignClassTeacher(data.classGroupId, data.teacherId);
+      console.log('Teacher assignment result:', result);
       toast.success('Class teacher assigned successfully');
       setIsAssignmentModalOpen(false);
       setSelectedClassForAssignment(null);
       loadClasses();
     } catch (error) {
+      console.error('Error assigning teacher:', error);
       toast.error('Failed to assign class teacher');
     }
   };
@@ -124,7 +156,7 @@ const ClassesPage: React.FC = () => {
   };
 
   const filteredClasses = classes.filter(classGroup => {
-    const matchesSearch = searchTerm === '' || 
+    const matchesSearch = searchTerm === '' ||
       classGroup.form.toLowerCase().includes(searchTerm.toLowerCase()) ||
       classGroup.section.toLowerCase().includes(searchTerm.toLowerCase()) ||
       classGroup.classTeacher?.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -147,58 +179,59 @@ const ClassesPage: React.FC = () => {
   ];
 
   const tableData = filteredClasses.map(classGroup => {
-  // Debug logging
-  console.log('Class group:', classGroup);
-  console.log('Class teacher:', classGroup.classTeacher);
-  console.log('Students:', classGroup.students);
-  
-  return {
-    id: classGroup.id,
-    form: classGroup.form,
-    section: classGroup.section,
-    academicYear: classGroup.academicYear,
-    classTeacher: classGroup.classTeacher && classGroup.classTeacher.firstName
-      ? `${classGroup.classTeacher.firstName} ${classGroup.classTeacher.lastName}`
-      : 'Not Assigned',
-    studentCount: classGroup.students?.length || 0,
-    actions: (
-      <div className="flex space-x-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => navigate(`/app/classes/${classGroup.id}`)}
-        >
-          <Eye className="h-4 w-4" />
-        </Button>
-        {canManageClasses() && (
-          <>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => openEditModal(classGroup)}
-            >
-              <Edit className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => openAssignmentModal(classGroup)}
-            >
-              <UserPlus className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleDeleteClass(classGroup.id)}
-            >
-              <Trash2 className="h-4 w-4 text-red-500" />
-            </Button>
-          </>
-        )}
-      </div>
-    )
-   };
-});
+    // Debug logging
+    console.log('Class group:', classGroup);
+    console.log('Class teacher:', classGroup.classTeacher);
+    console.log('Class teacher name:', classGroup.classTeacherName);
+    console.log('Students:', classGroup.students);
+
+    return {
+      id: classGroup.id,
+      form: classGroup.form,
+      section: classGroup.section,
+      academicYear: classGroup.academicYear,
+      classTeacher: classGroup.classTeacher && classGroup.classTeacher.firstName
+        ? `${classGroup.classTeacher.firstName} ${classGroup.classTeacher.lastName}`
+        : classGroup.classTeacherName || 'Not Assigned',
+      studentCount: classGroup.students?.length || 0,
+      actions: (
+        <div className="flex space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate(`/app/classes/${classGroup.id}`)}
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
+          {canManageClasses() && (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => openEditModal(classGroup)}
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => openAssignmentModal(classGroup)}
+              >
+                <UserPlus className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleDeleteClass(classGroup.id)}
+              >
+                <Trash2 className="h-4 w-4 text-red-500" />
+              </Button>
+            </>
+          )}
+        </div>
+      )
+    };
+  });
 
   if (loading) {
     return (
@@ -236,7 +269,7 @@ const ClassesPage: React.FC = () => {
               value={yearFilter}
               onChange={(e) => setYearFilter(e.target.value)}
               className="w-full sm:w-48"
-              options={[{ value: '', label: 'All Years' }, ...uniqueYears.map(year => ({ value: year, label: year }))] }
+              options={[{ value: '', label: 'All Years' }, ...uniqueYears.map(year => ({ value: year, label: year }))]}
             >
               <option value="">All Years</option>
               {uniqueYears.map(year => (

@@ -95,6 +95,7 @@ export interface Student {
   guardians?: Guardian[];
   subjects?: Subject[];
   classGroup?: ClassGroup;
+  academicYear: string;
 }
 
 export interface StudentRegistrationDTO {
@@ -175,6 +176,9 @@ export interface Subject {
 }
 
 export enum SubjectCategory {
+  JUNIOR_SECONDARY_LANGUAGES = 'JUNIOR_SECONDARY_LANGUAGES',
+  JUNIOR_SECONDARY_ARTS = 'JUNIOR_SECONDARY_ARTS',
+  JUNIOR_SECONDARY_SCIENCES = 'JUNIOR_SECONDARY_SCIENCES',
   O_LEVEL_LANGUAGES = 'O_LEVEL_LANGUAGES',
   O_LEVEL_ARTS = 'O_LEVEL_ARTS',
   O_LEVEL_COMMERCIALS = 'O_LEVEL_COMMERCIALS',
@@ -191,7 +195,10 @@ export interface ClassGroup {
   section: string;
   academicYear: string;
   classTeacher?: Teacher;
+  classTeacherId?: number;
+  classTeacherName?: string;
   students?: Student[];
+  studentCount?: number;
 }
 
 // Guardian Types
@@ -375,11 +382,13 @@ export interface ActivityItem {
 
 // Constants
 export const FORMS = {
-  O_LEVEL: ['Form 1', 'Form 2', 'Form 3', 'Form 4'],
+  JUNIOR_SECONDARY: ['Form 1', 'Form 2'],
+  O_LEVEL: ['Form 3', 'Form 4'],
   A_LEVEL: ['Form 5', 'Form 6']
 };
 
 export const LEVELS = {
+  JUNIOR_SECONDARY: 'JUNIOR_SECONDARY',
   O_LEVEL: 'O_LEVEL',
   A_LEVEL: 'A_LEVEL'
 };
@@ -393,6 +402,9 @@ export const GRADES = {
 };
 
 export const SUBJECT_CATEGORIES = {
+  [SubjectCategory.JUNIOR_SECONDARY_LANGUAGES]: 'Languages',
+  [SubjectCategory.JUNIOR_SECONDARY_ARTS]: 'Arts',
+  [SubjectCategory.JUNIOR_SECONDARY_SCIENCES]: 'Sciences',
   [SubjectCategory.O_LEVEL_LANGUAGES]: 'Languages',
   [SubjectCategory.O_LEVEL_ARTS]: 'Arts',
   [SubjectCategory.O_LEVEL_COMMERCIALS]: 'Commercials',

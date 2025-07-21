@@ -33,6 +33,13 @@ const TeachersPage: React.FC = () => {
       setLoading(true);
       const data = await teacherService.getAllTeachers();
       console.log('Teachers data:', data);
+      
+      // Log roles for debugging
+      data.forEach(teacher => {
+        console.log(`Teacher ${teacher.firstName} ${teacher.lastName} roles:`, 
+          teacher.user?.roles);
+      });
+      
       setTeachers(data);
     } catch (error) {
       console.error('Error loading teachers:', error);
@@ -108,10 +115,15 @@ const TeachersPage: React.FC = () => {
     email: teacher.user?.email || 'N/A',
     roles: teacher.user?.roles ? (
       Array.isArray(teacher.user.roles) ? 
-        teacher.user.roles.map(role => 
-          typeof role === 'string' ? role.replace('ROLE_', '') : 
-          typeof role.name === 'string' ? role.name.replace('ROLE_', '') : ''
-        ).filter(Boolean).join(', ') : 'N/A'
+        teacher.user.roles.map((role: any) => {
+          let roleName = '';
+          if (typeof role === 'string') {
+            roleName = role.replace('ROLE_', '');
+          } else if (typeof role.name === 'string') {
+            roleName = role.name.replace('ROLE_', '');
+          }
+          return roleName;
+        }).filter(Boolean).join(', ') : 'N/A'
     ) : 'N/A',
     actions: (
       <div className="flex space-x-2">

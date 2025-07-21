@@ -51,17 +51,27 @@ const BulkAttendanceForm: React.FC<BulkAttendanceFormProps> = ({
         studentId: student.id,
         present: existingAttendance[student.id] ?? true
       }));
-      setAttendanceRecords(initialRecords);
+      // Only update if the records have actually changed
+      const currentIds = new Set(attendanceRecords.map(r => r.studentId));
+      const hasChanges = initialRecords.length !== attendanceRecords.length || 
+        initialRecords.some(r => !currentIds.has(r.studentId));
+      
+      if (hasChanges) {
+        setAttendanceRecords(initialRecords);
+      }
     }
-  }, [classGroup.students, existingAttendance]);
+  }, [classGroup.students, JSON.stringify(existingAttendance)]);
 
   // Update selectAll state based on attendance records
+  // Using JSON.stringify to create a stable dependency that only changes when the actual data changes
   useEffect(() => {
     if (attendanceRecords.length > 0) {
       const allPresent = attendanceRecords.every(record => record.present);
-      setSelectAll(allPresent);
+      if (allPresent !== selectAll) {
+        setSelectAll(allPresent);
+      }
     }
-  }, [attendanceRecords]);
+  }, [JSON.stringify(attendanceRecords.map(r => r.present))]);
 
   const handleFormSubmit = async (data: { date: string }) => {
     try {

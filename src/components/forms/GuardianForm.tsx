@@ -69,13 +69,18 @@ const GuardianForm: React.FC<GuardianFormProps> = ({
   const relationshipOptions = [
     { value: 'Father', label: 'Father' },
     { value: 'Mother', label: 'Mother' },
+    { value: 'Stepfather', label: 'Stepfather' },
+    { value: 'Stepmother', label: 'Stepmother' },
     { value: 'Grandfather', label: 'Grandfather' },
     { value: 'Grandmother', label: 'Grandmother' },
     { value: 'Uncle', label: 'Uncle' },
     { value: 'Aunt', label: 'Aunt' },
     { value: 'Brother', label: 'Brother' },
     { value: 'Sister', label: 'Sister' },
-    { value: 'Guardian', label: 'Guardian' },
+    { value: 'Legal Guardian', label: 'Legal Guardian' },
+    { value: 'Foster Parent', label: 'Foster Parent' },
+    { value: 'Caregiver', label: 'Caregiver' },
+    { value: 'Other Relative', label: 'Other Relative' },
     { value: 'Other', label: 'Other' }
   ];
 

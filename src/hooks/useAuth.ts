@@ -13,10 +13,11 @@ export const useAuth = () => {
   // Check authentication status on mount
   useEffect(() => {
     authStore.checkAuth();
+    // Only check school config once when the app first loads
+    if (!schoolStore.checkPerformed) {
+      schoolStore.checkSchoolConfig();
+    }
   }, []);
-
-  // Only check school config when explicitly needed
-  // Removed automatic check to prevent infinite loops
 
   return {
     // Auth state
@@ -38,6 +39,7 @@ export const useAuth = () => {
     // Actions
     login: authStore.login,
     logout: authStore.logout,
+    resetAuth: authStore.resetAuth,
     clearError: authStore.clearError,
     
     // Role helpers

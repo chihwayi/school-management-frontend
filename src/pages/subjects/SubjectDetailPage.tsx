@@ -86,14 +86,17 @@ const SubjectDetailPage: React.FC = () => {
 
   const getCategoryBadgeColor = (category: string): string => {
     switch (category) {
+      case 'JUNIOR_SECONDARY_LANGUAGES':
       case 'O_LEVEL_LANGUAGES':
         return 'bg-blue-100 text-blue-800';
+      case 'JUNIOR_SECONDARY_ARTS':
       case 'O_LEVEL_ARTS':
       case 'A_LEVEL_ARTS':
         return 'bg-purple-100 text-purple-800';
       case 'O_LEVEL_COMMERCIALS':
       case 'A_LEVEL_COMMERCIALS':
         return 'bg-green-100 text-green-800';
+      case 'JUNIOR_SECONDARY_SCIENCES':
       case 'O_LEVEL_SCIENCES':
       case 'A_LEVEL_SCIENCES':
         return 'bg-orange-100 text-orange-800';
@@ -103,7 +106,16 @@ const SubjectDetailPage: React.FC = () => {
   };
 
   const getLevelBadgeColor = (level: string): string => {
-    return level === 'O_LEVEL' ? 'bg-indigo-100 text-indigo-800' : 'bg-red-100 text-red-800';
+    switch (level) {
+      case 'JUNIOR_SECONDARY':
+        return 'bg-teal-100 text-teal-800';
+      case 'O_LEVEL':
+        return 'bg-indigo-100 text-indigo-800';
+      case 'A_LEVEL':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
   };
 
 
@@ -122,7 +134,7 @@ const SubjectDetailPage: React.FC = () => {
         <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
         <h2 className="text-lg font-medium text-gray-900 mb-2">Subject not found</h2>
         <p className="text-gray-600 mb-4">The subject you're looking for doesn't exist.</p>
-        <Button onClick={() => navigate('/subjects')}>Back to Subjects</Button>
+        <Button onClick={() => navigate('/app/subjects')}>Back to Subjects</Button>
       </div>
     );
   }
@@ -134,7 +146,7 @@ const SubjectDetailPage: React.FC = () => {
         <div className="flex items-center space-x-4">
           <Button
             variant="outline"
-            onClick={() => navigate('/subjects')}
+            onClick={() => navigate('/app/subjects')}
             className="flex items-center space-x-2"
           >
             <ArrowLeft className="h-4 w-4" />

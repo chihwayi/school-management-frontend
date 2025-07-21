@@ -35,32 +35,52 @@ const ClassForm: React.FC<ClassFormProps> = ({
     formState: { errors },
     watch
   } = useForm<Omit<ClassGroup, 'id' | 'students'>>({
-    defaultValues: initialData || {
+    defaultValues: initialData ? {
+      form: initialData.form,
+      section: initialData.section,
+      academicYear: initialData.academicYear,
+      classTeacherId: initialData.classTeacher?.id || undefined
+    } : {
       form: '',
       section: '',
       academicYear: currentYear.toString(),
-      classTeacher: undefined
+      classTeacherId: undefined
     }
   });
 
   const selectedForm = watch('form');
   const level = selectedForm ? (
+    FORMS.JUNIOR_SECONDARY.includes(selectedForm) ? 'JUNIOR_SECONDARY' :
     FORMS.O_LEVEL.includes(selectedForm) ? 'O_LEVEL' : 'A_LEVEL'
   ) : undefined;
 
   const handleFormSubmit = async (data: Omit<ClassGroup, 'id' | 'students'>) => {
     try {
       // Automatically determine level based on form
-      const level = FORMS.O_LEVEL.includes(data.form) ? 'O_LEVEL' : 'A_LEVEL';
-      const dataWithLevel = { ...data, level };
-      await onSubmit(dataWithLevel);
+      let level;
+      if (FORMS.JUNIOR_SECONDARY.includes(data.form)) {
+        level = 'JUNIOR_SECONDARY';
+      } else if (FORMS.O_LEVEL.includes(data.form)) {
+        level = 'O_LEVEL';
+      } else {
+        level = 'A_LEVEL';
+      }
+      
+      // Make sure classTeacherId is properly set
+      const formData = {
+        ...data,
+        level,
+        classTeacherId: data.classTeacherId || null
+      };
+      
+      await onSubmit(formData);
     } catch (error) {
       // Error handling is done in the parent component
     }
   };
 
   const getFormOptions = () => {
-    return [...FORMS.O_LEVEL, ...FORMS.A_LEVEL].map(form => ({
+    return [...FORMS.JUNIOR_SECONDARY, ...FORMS.O_LEVEL, ...FORMS.A_LEVEL].map(form => ({
       value: form,
       label: form
     }));
@@ -125,9 +145,11 @@ const ClassForm: React.FC<ClassFormProps> = ({
             
             <Select
               label="Class Teacher"
-              {...register('classTeacher')}
-              error={errors.classTeacher?.message}
-              options={getTeacherOptions()}
+              {...register('classTeacherId', { 
+                setValueAs: v => v === '' ? null : Number(v)
+              })}
+              error={errors.classTeacherId?.message}
+              options={[{ value: '', label: 'Select class teacher (optional)' }, ...getTeacherOptions()]}
               placeholder="Select class teacher (optional)"
             />
           </div>
@@ -138,7 +160,10 @@ const ClassForm: React.FC<ClassFormProps> = ({
               <div className="flex items-center">
                 <Users className="h-4 w-4 text-blue-400 mr-2" />
                 <span className="text-sm text-blue-700">
-                  Level: {level === 'O_LEVEL' ? 'O Level' : 'A Level'}
+                  Level: {
+                    level === 'JUNIOR_SECONDARY' ? 'Junior Secondary' :
+                    level === 'O_LEVEL' ? 'O Level' : 'A Level'
+                  }
                 </span>
               </div>
             </div>

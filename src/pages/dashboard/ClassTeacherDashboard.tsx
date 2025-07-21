@@ -51,17 +51,13 @@ const ClassTeacherDashboard: React.FC = () => {
 
   const isLoading = teacherLoading || assignmentsLoading || supervisedLoading;
 
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
-
   // Calculate stats
   const stats = React.useMemo(() => {
     const totalAssignments = assignments?.length || 0;
     const uniqueSubjects = new Set(assignments?.map(a => a.subject.id)).size;
     const uniqueClasses = new Set(assignments?.map(a => `${a.form}-${a.section}`)).size;
     const supervisedClassesCount = supervisedClasses?.length || 0;
-    const totalStudentsInSupervisedClasses = supervisedClasses?.reduce((sum, cls) => sum + (cls.students?.length || 0), 0) || 0;
+    const totalStudentsInSupervisedClasses = supervisedClasses?.reduce((sum, cls) => sum + (cls.studentCount || 0), 0) || 0;
     
     return {
       totalAssignments,
@@ -71,6 +67,10 @@ const ClassTeacherDashboard: React.FC = () => {
       totalStudentsInSupervisedClasses,
     };
   }, [assignments, supervisedClasses]);
+  
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
 
   const quickActions = [
     {
@@ -245,7 +245,7 @@ const ClassTeacherDashboard: React.FC = () => {
                       {classGroup.form} {classGroup.section}
                     </h3>
                     <Badge variant="info">
-                      {classGroup.students?.length || 0} students
+                      {classGroup.studentCount || 0} students
                     </Badge>
                   </div>
                   <p className="text-sm text-gray-600 mb-3">

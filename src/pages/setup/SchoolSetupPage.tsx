@@ -1,12 +1,21 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { SchoolSetupForm } from '../../components/forms';
 import { useSchoolStore } from '../../store/schoolStore';
-import  LoadingSpinner from '../../components/common/LoadingSpinner';
+import { useAuth } from '../../hooks/useAuth';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
 import { GraduationCap, Settings, School } from 'lucide-react';
 
 const SchoolSetupPage: React.FC = () => {
-  const { isConfigured: isSchoolConfigured, setupSchool, isLoading: setupLoading, error } = useSchoolStore();
+  const { isConfigured: isSchoolConfigured, setupSchool, isLoading: setupLoading, error, checkSchoolConfig } = useSchoolStore();
+  const { resetAuth } = useAuth();
+  
+  // Clear auth data once on mount
+  useEffect(() => {
+    // Clear any cached auth data
+    resetAuth();
+    // No need to check school config here as it's already checked in App.tsx
+  }, []);
 
   if (setupLoading) {
     return <LoadingSpinner />;
@@ -20,6 +29,11 @@ const SchoolSetupPage: React.FC = () => {
     await setupSchool(data, logo, background);
     // The store will update isConfigured, triggering redirect
   }
+
+  const handleRefresh = () => {
+    // Manual refresh if needed
+    checkSchoolConfig();
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">

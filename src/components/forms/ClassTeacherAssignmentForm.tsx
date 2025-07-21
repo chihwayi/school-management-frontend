@@ -33,10 +33,12 @@ const ClassTeacherAssignmentForm: React.FC<ClassTeacherAssignmentFormProps> = ({
 
   const handleFormSubmit = async (data: { teacherId: number; classGroupId: number }) => {
     try {
+      console.log('Assigning teacher with data:', data);
       await onSubmit(data);
       toast.success('Class teacher assigned successfully!');
       reset();
     } catch (error) {
+      console.error('Error assigning teacher:', error);
       toast.error('Failed to assign class teacher');
     }
   };
@@ -61,7 +63,7 @@ const ClassTeacherAssignmentForm: React.FC<ClassTeacherAssignmentFormProps> = ({
             error={errors.teacherId?.message}
             {...register('teacherId', {
               required: 'Teacher is required',
-              valueAsNumber: true
+              setValueAs: v => Number(v)
             })}
           />
         </div>
@@ -73,7 +75,7 @@ const ClassTeacherAssignmentForm: React.FC<ClassTeacherAssignmentFormProps> = ({
             error={errors.classGroupId?.message}
             {...register('classGroupId', {
               required: 'Class is required',
-              valueAsNumber: true
+              setValueAs: v => Number(v)
             })}
           />
         </div>

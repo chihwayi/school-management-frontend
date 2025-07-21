@@ -44,7 +44,8 @@ const StudentEditForm: React.FC<StudentEditFormProps> = ({
   });
 
   const selectedLevel = watch('level');
-  const availableForms = selectedLevel === LEVELS.O_LEVEL ? FORMS.O_LEVEL : 
+  const availableForms = selectedLevel === LEVELS.JUNIOR_SECONDARY ? FORMS.JUNIOR_SECONDARY :
+                        selectedLevel === LEVELS.O_LEVEL ? FORMS.O_LEVEL : 
                         selectedLevel === LEVELS.A_LEVEL ? FORMS.A_LEVEL : [];
 
   return (
@@ -81,6 +82,7 @@ const StudentEditForm: React.FC<StudentEditFormProps> = ({
               {...register('level', { required: 'Level is required' })}
               error={errors.level?.message}
               options={[
+                { value: LEVELS.JUNIOR_SECONDARY, label: 'Junior Secondary' },
                 { value: LEVELS.O_LEVEL, label: 'O Level' },
                 { value: LEVELS.A_LEVEL, label: 'A Level' }
               ]}

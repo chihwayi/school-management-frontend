@@ -133,6 +133,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             icon: BarChart3,
             current: location.pathname === ROUTES.FEES_REPORTS,
             show: isAdmin()
+        },
+        {
+            name: 'Fee Settings',
+            href: ROUTES.FEES_SETTINGS,
+            icon: DollarSign,
+            current: location.pathname === ROUTES.FEES_SETTINGS,
+            show: isAdmin() || isClerk()
         }
     ];
 

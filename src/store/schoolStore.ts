@@ -10,6 +10,7 @@ interface SchoolState {
   theme: Theme | null;
   isLoading: boolean;
   error: string | null;
+  checkPerformed: boolean;
   
   // Actions
   checkSchoolConfig: () => Promise<void>;
@@ -32,6 +33,7 @@ export const useSchoolStore = create<SchoolState>()(
       theme: null,
       isLoading: false,
       error: null,
+      checkPerformed: false,
 
       // Actions
       checkSchoolConfig: async () => {
@@ -52,17 +54,23 @@ export const useSchoolStore = create<SchoolState>()(
             isConfigured: response.configured,
             theme,
             isLoading: false,
-            error: null
+            error: null,
+            checkPerformed: true
           });
         } catch (error: any) {
           // If it's a 404 or no school found, set as not configured without error
-          if (error.response?.status === 404 || error.response?.status === 500) {
+          if (error.response?.status === 404 || error.response?.status === 500 || 
+              error.response?.data?.message?.includes('not configured')) {
+            // Clear any cached school data
+            localStorage.removeItem('school-storage');
+            
             set({
               school: null,
               isConfigured: false,
               theme: null,
               isLoading: false,
-              error: null // Don't set error for expected 404
+              error: null, // Don't set error for expected 404
+              checkPerformed: true
             });
           } else {
             set({
@@ -70,7 +78,8 @@ export const useSchoolStore = create<SchoolState>()(
               isConfigured: false,
               theme: null,
               isLoading: false,
-              error: error.response?.data?.message || 'Failed to check school configuration'
+              error: error.response?.data?.message || 'Failed to check school configuration',
+              checkPerformed: true
             });
           }
         }

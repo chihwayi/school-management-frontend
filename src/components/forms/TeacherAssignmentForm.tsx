@@ -62,7 +62,9 @@ const TeacherAssignmentForm: React.FC<TeacherAssignmentFormProps> = ({
 
   // Update available forms when level changes
   useEffect(() => {
-    if (selectedLevel === LEVELS.O_LEVEL) {
+    if (selectedLevel === LEVELS.JUNIOR_SECONDARY) {
+      setAvailableForms(FORMS.JUNIOR_SECONDARY);
+    } else if (selectedLevel === LEVELS.O_LEVEL) {
       setAvailableForms(FORMS.O_LEVEL);
     } else if (selectedLevel === LEVELS.A_LEVEL) {
       setAvailableForms(FORMS.A_LEVEL);
@@ -74,7 +76,14 @@ const TeacherAssignmentForm: React.FC<TeacherAssignmentFormProps> = ({
   // Update available subjects when form changes
   useEffect(() => {
     if (watchedForm) {
-      const level = FORMS.O_LEVEL.includes(watchedForm) ? 'O_LEVEL' : 'A_LEVEL';
+      let level;
+      if (FORMS.JUNIOR_SECONDARY.includes(watchedForm)) {
+        level = 'JUNIOR_SECONDARY';
+      } else if (FORMS.O_LEVEL.includes(watchedForm)) {
+        level = 'O_LEVEL';
+      } else {
+        level = 'A_LEVEL';
+      }
       const filteredSubjects = subjects.filter(subject => subject.level === level);
       setAvailableSubjects(filteredSubjects);
     }
@@ -83,7 +92,9 @@ const TeacherAssignmentForm: React.FC<TeacherAssignmentFormProps> = ({
   // Set level when form changes
   useEffect(() => {
     if (watchedForm) {
-      if (FORMS.O_LEVEL.includes(watchedForm)) {
+      if (FORMS.JUNIOR_SECONDARY.includes(watchedForm)) {
+        setSelectedLevel(LEVELS.JUNIOR_SECONDARY);
+      } else if (FORMS.O_LEVEL.includes(watchedForm)) {
         setSelectedLevel(LEVELS.O_LEVEL);
       } else if (FORMS.A_LEVEL.includes(watchedForm)) {
         setSelectedLevel(LEVELS.A_LEVEL);
@@ -119,7 +130,7 @@ const TeacherAssignmentForm: React.FC<TeacherAssignmentFormProps> = ({
 
   const formOptions = [
     { value: '', label: 'Select form' },
-    ...[...FORMS.O_LEVEL, ...FORMS.A_LEVEL].map(form => ({
+    ...[...FORMS.JUNIOR_SECONDARY, ...FORMS.O_LEVEL, ...FORMS.A_LEVEL].map(form => ({
       value: form,
       label: form
     }))
@@ -207,7 +218,10 @@ const TeacherAssignmentForm: React.FC<TeacherAssignmentFormProps> = ({
       <div className="bg-blue-50 p-4 rounded-lg">
         <h4 className="font-medium text-blue-900 mb-2">Assignment Summary</h4>
         <div className="text-sm text-blue-800 space-y-1">
-          <p>Level: {selectedLevel ? (selectedLevel === 'O_LEVEL' ? 'O Level' : 'A Level') : 'Not selected'}</p>
+          <p>Level: {selectedLevel ? (
+            selectedLevel === 'JUNIOR_SECONDARY' ? 'Junior Secondary' :
+            selectedLevel === 'O_LEVEL' ? 'O Level' : 'A Level'
+          ) : 'Not selected'}</p>
           <p>Available Subjects: {availableSubjects.length}</p>
         </div>
       </div>

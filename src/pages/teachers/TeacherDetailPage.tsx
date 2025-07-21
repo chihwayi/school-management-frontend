@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { teacherService } from '../../services/teacherService';
 import type { Teacher, TeacherSubjectClass, ClassGroup } from '../../types';
 import { Card, Button, Badge, Table } from '../../components/ui';
 import { ArrowLeft, Edit, Mail, User } from 'lucide-react';
@@ -19,71 +20,92 @@ const TeacherDetailPage: React.FC = () => {
     }
   }, [id]);
   
-  // No need for fallback data anymore since we're using mock data
-
-  // Mock data loading function
   const loadTeacherDetails = async (teacherId: number) => {
     try {
       setLoading(true);
       
-      // Create mock teacher data
-      const mockTeacher: Teacher = {
-        id: teacherId,
-        firstName: 'Teacher',
-        lastName: teacherId === 1 ? 'Default' : 'Custom',
-        employeeId: teacherId === 1 ? 'TEACH001' : `EMP00${teacherId}`,
-        user: {
-          id: teacherId + 2,
-          username: teacherId === 1 ? 'teacher' : `teacher${teacherId}`,
-          email: teacherId === 1 ? 'teacher@school.com' : `teacher${teacherId}@school.com`,
-          enabled: true,
-          roles: [
-            { id: 1, name: 'ROLE_USER' },
-            { id: 3, name: 'ROLE_TEACHER' },
-            teacherId === 1 ? { id: 5, name: 'ROLE_CLASS_TEACHER' } : null
-          ].filter(Boolean)
+      // Get basic teacher data from the list endpoint instead
+      const teachers = await teacherService.getAllTeachers();
+      const teacherData = teachers.find(t => t.id === teacherId);
+      
+      if (teacherData) {
+        setTeacher(teacherData);
+        
+        // For now, use empty arrays for classes
+        setSupervisedClasses([]);
+        
+        // Try to get subject assignments
+        try {
+          // Import the subjectService
+          const subjectService = await import('../../services/subjectService').then(m => m.subjectService);
+          
+          // Get all subjects to have their details
+          const allSubjects = await subjectService.getAllSubjects();
+          
+          // Create a mock assignment for testing
+          const mockAssignments = [
+            {
+              id: 1,
+              teacher: teacherData,
+              subject: allSubjects.find(s => s.level === 'JUNIOR_SECONDARY') || allSubjects[0],
+              form: 'Form 1',
+              section: 'A',
+              academicYear: '2025'
+            }
+          ];
+          
+          setAssignments(mockAssignments as any);
+        } catch (error) {
+          console.error('Error loading subject assignments:', error);
         }
-      };
-      
-      // Create mock assignments
-      const mockAssignments: any[] = [
-        {
-          id: 1,
-          teacher: mockTeacher,
-          subject: { id: 1, name: 'Mathematics', code: 'MATH101', level: 'O_LEVEL' },
-          form: 'Form 1',
-          section: 'A',
-          academicYear: '2023',
-          subjectName: 'Mathematics'
-        },
-        {
-          id: 2,
-          teacher: mockTeacher,
-          subject: { id: 2, name: 'English', code: 'ENG101', level: 'O_LEVEL' },
-          form: 'Form 2',
-          section: 'B',
-          academicYear: '2023',
-          subjectName: 'English'
+        
+        // Import the classService
+        const classService = await import('../../services/classService').then(m => m.classService);
+        
+        // Get classes from the API
+        try {
+          const classesData = await classService.getAllClassGroups();
+          console.log('All classes:', classesData);
+          
+          // Filter classes where this teacher is the class teacher
+          const teacherClasses = classesData.filter(c => 
+            c.classTeacherId === teacherId || 
+            (c.classTeacher && c.classTeacher.id === teacherId)
+          );
+          
+          console.log('Teacher classes:', teacherClasses);
+          
+          if (teacherClasses.length > 0) {
+            // Get student counts for each class
+            const classesWithStudents = await Promise.all(teacherClasses.map(async (classGroup) => {
+              try {
+                // Get students for this class
+                const studentsData = await classService.getStudentsInClass(classGroup.id);
+                console.log(`Students in class ${classGroup.id}:`, studentsData);
+                
+                return {
+                  ...classGroup,
+                  studentCount: studentsData.length
+                };
+              } catch (e) {
+                console.error(`Error getting students for class ${classGroup.id}:`, e);
+                return {
+                  ...classGroup,
+                  studentCount: 0
+                };
+              }
+            }));
+            
+            setSupervisedClasses(classesWithStudents);
+          }
+        } catch (classError) {
+          console.error('Could not load class data:', classError);
         }
-      ];
-      
-      // Create mock supervised classes
-      const mockSupervisedClasses: ClassGroup[] = teacherId === 1 ? [
-        {
-          id: 1,
-          form: 'Form 1',
-          section: 'A',
-          academicYear: '2023',
-          classTeacher: mockTeacher
-        }
-      ] : [];
-      
-      // Set the mock data
-      setTeacher(mockTeacher);
-      setAssignments(mockAssignments);
-      setSupervisedClasses(mockSupervisedClasses);
-      
+      } else {
+        toast.error('Teacher not found');
+      }
     } catch (error) {
+      console.error('Error loading teacher details:', error);
       toast.error('Failed to load teacher details');
     } finally {
       setLoading(false);
@@ -98,22 +120,28 @@ const TeacherDetailPage: React.FC = () => {
     return <div className="p-6">Teacher not found</div>;
   }
 
-  const assignmentsData = (assignments || []).map(assignment => ({
-    subject: assignment.subject?.name || assignment.subjectName || 'N/A',
-    class: `${assignment.form} ${assignment.section}`,
-    academicYear: assignment.academicYear
-  }));
+  const assignmentsData = (assignments || []).map(assignment => {
+    let subjectName = 'N/A';
+    if (assignment.subject) {
+      if (typeof assignment.subject === 'object' && assignment.subject.name) {
+        subjectName = assignment.subject.name;
+      } else if (typeof assignment.subject === 'string') {
+        subjectName = assignment.subject;
+      }
+    }
+    
+    return {
+      subject: subjectName,
+      class: `${assignment.form || ''} ${assignment.section || ''}`.trim() || 'N/A',
+      academicYear: assignment.academicYear || 'N/A'
+    };
+  });
 
   const classesData = (supervisedClasses || []).map(classGroup => ({
-    class: `${classGroup.form} ${classGroup.section}`,
-    academicYear: classGroup.academicYear,
-    students: classGroup.students?.length || 0
+    class: `${classGroup.form || ''} ${classGroup.section || ''}`.trim(),
+    academicYear: classGroup.academicYear || '',
+    students: classGroup.studentCount || 0
   }));
-  
-  // Add console logs to debug the data
-  console.log('Teacher:', teacher);
-  console.log('Assignments:', assignments);
-  console.log('Supervised Classes:', supervisedClasses);
 
   return (
     <div className="p-6">

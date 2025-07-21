@@ -18,6 +18,7 @@ interface AuthState {
   login: (credentials: LoginRequest) => Promise<void>;
   logout: () => void;
   checkAuth: () => void;
+  resetAuth: () => void;
   setSchool: (school: SchoolInfo) => void;
   clearError: () => void;
   
@@ -74,6 +75,21 @@ export const useAuthStore = create<AuthState>()(
 
       logout: () => {
         authService.logout();
+        set({
+          isAuthenticated: false,
+          token: null,
+          username: null,
+          roles: [],
+          school: null,
+          isLoading: false,
+          error: null
+        });
+      },
+      
+      resetAuth: () => {
+        // Clear localStorage auth data
+        localStorage.removeItem('auth-storage');
+        
         set({
           isAuthenticated: false,
           token: null,

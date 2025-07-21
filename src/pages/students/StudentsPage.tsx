@@ -154,14 +154,20 @@ const StudentsPage: React.FC = () => {
               value={levelFilter}
               onChange={(e) => setLevelFilter(e.target.value)}
               placeholder="Filter by level"
-              options={[{ value: '', label: 'All Levels' }, { value: LEVELS.O_LEVEL, label: 'O Level' }, { value: LEVELS.A_LEVEL, label: 'A Level' }]}            >
+              options={[
+                { value: '', label: 'All Levels' }, 
+                { value: LEVELS.JUNIOR_SECONDARY, label: 'Junior Secondary' },
+                { value: LEVELS.O_LEVEL, label: 'O Level' }, 
+                { value: LEVELS.A_LEVEL, label: 'A Level' }
+              ]}
+            >
             </Select>
             <Select
               value={formFilter}
               onChange={(e) => setFormFilter(e.target.value)}
               options={[
                 { value: '', label: 'All Forms' },
-                ...[...FORMS.O_LEVEL, ...FORMS.A_LEVEL].map(form => ({
+                ...[...FORMS.JUNIOR_SECONDARY, ...FORMS.O_LEVEL, ...FORMS.A_LEVEL].map(form => ({
                   value: form,
                   label: form
                 }))

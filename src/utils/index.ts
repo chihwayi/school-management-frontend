@@ -37,7 +37,13 @@ export const formatDateTime = (date: string | Date): string => {
 };
 
 export const getSubjectCategoriesForLevel = (level: string) => {
-  if (level === 'O_LEVEL') {
+  if (level === 'JUNIOR_SECONDARY') {
+    return [
+      { value: 'JUNIOR_SECONDARY_LANGUAGES', label: 'Languages' },
+      { value: 'JUNIOR_SECONDARY_ARTS', label: 'Arts' },
+      { value: 'JUNIOR_SECONDARY_SCIENCES', label: 'Sciences' }
+    ];
+  } else if (level === 'O_LEVEL') {
     return [
       { value: 'O_LEVEL_LANGUAGES', label: 'Languages' },
       { value: 'O_LEVEL_ARTS', label: 'Arts' },
@@ -55,10 +61,13 @@ export const getSubjectCategoriesForLevel = (level: string) => {
 };
 
 export const getLevelFromForm = (form: string): string => {
-  const oLevelForms = ['Form 1', 'Form 2', 'Form 3', 'Form 4'];
+  const juniorSecondaryForms = ['Form 1', 'Form 2'];
+  const oLevelForms = ['Form 3', 'Form 4'];
   const aLevelForms = ['Form 5', 'Form 6'];
   
-  if (oLevelForms.includes(form)) {
+  if (juniorSecondaryForms.includes(form)) {
+    return 'JUNIOR_SECONDARY';
+  } else if (oLevelForms.includes(form)) {
     return 'O_LEVEL';
   } else if (aLevelForms.includes(form)) {
     return 'A_LEVEL';

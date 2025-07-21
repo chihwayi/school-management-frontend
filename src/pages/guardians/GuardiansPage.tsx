@@ -1,18 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { Plus, Search, Edit, Trash2, Phone, MessageSquare, User } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Phone, User } from 'lucide-react';
+import { WhatsAppIcon } from '../../components/common';
 import { guardianService } from '../../services/guardianService';
 import { studentService } from '../../services/studentService';
 import { useRoleCheck } from '../../hooks/useAuth';
 import type { Guardian, Student } from '../../types';
 import { Button, Card, Input, Modal, Table, Badge } from '../../components/ui';
 import { GuardianForm } from '../../components/forms';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
+import { LoadingSpinner } from '../../components/common';
 
 const GuardiansPage: React.FC = () => {
   const { canManageStudents } = useRoleCheck();
   const queryClient = useQueryClient();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [selectedGuardian, setSelectedGuardian] = useState<Guardian | null>(null);
@@ -26,6 +30,21 @@ const GuardiansPage: React.FC = () => {
     queryFn: studentService.getAllStudents,
     enabled: canManageStudents()
   });
+  
+  // Get studentId from URL query params
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const studentId = params.get('studentId');
+    
+    if (studentId && students.length > 0) {
+      const id = parseInt(studentId);
+      // Find the student in the students list
+      const student = students.find(s => s.id === id);
+      if (student) {
+        setSelectedStudent(student);
+      }
+    }
+  }, [location.search, students]);
 
   // Fetch guardians for selected student
   const { data: guardians = [], isLoading: guardiansLoading } = useQuery({
@@ -61,6 +80,13 @@ const GuardiansPage: React.FC = () => {
     }
     setSelectedGuardian(null);
     setIsFormModalOpen(true);
+    
+    // Update URL to include studentId without navigating
+    const params = new URLSearchParams(location.search);
+    if (!params.has('studentId')) {
+      params.set('studentId', selectedStudent.id.toString());
+      navigate(`${location.pathname}?${params.toString()}`, { replace: true });
+    }
   };
 
   const handleEditGuardian = (guardian: Guardian) => {
@@ -83,6 +109,23 @@ const GuardiansPage: React.FC = () => {
     setIsFormModalOpen(false);
     setSelectedGuardian(null);
     queryClient.invalidateQueries({ queryKey: ['guardians'] });
+    
+    // If we came from student detail page, offer to go back
+    const params = new URLSearchParams(location.search);
+    if (params.get('studentId')) {
+      toast.success(
+        <div>
+          Guardian saved! 
+          <button 
+            className="ml-2 underline text-blue-600" 
+            onClick={() => navigate(`/app/students/${params.get('studentId')}`)}
+          >
+            Return to student
+          </button>
+        </div>,
+        { duration: 5000 }
+      );
+    }
   };
 
 
@@ -185,7 +228,7 @@ const GuardiansPage: React.FC = () => {
                         </Table.Cell>
                         <Table.Cell>
                           <div className="flex items-center space-x-2">
-                            <MessageSquare className="h-4 w-4 text-green-500" />
+                            <WhatsAppIcon className="h-4 w-4" />
                             <span>{guardian.whatsappNumber || 'N/A'}</span>
                           </div>
                         </Table.Cell>

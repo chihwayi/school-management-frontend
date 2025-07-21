@@ -156,6 +156,7 @@ export const ROUTES = {
   FEES_PAYMENT: '/app/fees/payment',
   FEES_STATUS: '/app/fees/status',
   FEES_REPORTS: '/app/fees/reports',
+  FEES_SETTINGS: '/app/fees/settings',
   SECTIONS: '/app/sections',
   USERS: '/app/users',
   PROFILE: '/app/profile',
