@@ -39,5 +39,15 @@ export const feePaymentService = {
       params: { query }
     });
     return response.data;
+  },
+  
+  fixPaymentStatus: async (): Promise<string> => {
+    const response = await api.post('/fee-payments/fix-payment-status');
+    return response.data;
+  },
+  
+  fixStudentPayment: async (studentName: string): Promise<string> => {
+    const response = await api.get(`/fee-payments/fix-student-payment/${encodeURIComponent(studentName)}`);
+    return response.data;
   }
 };

@@ -190,8 +190,9 @@ const TeacherDetailPage: React.FC = () => {
                   <p className="text-sm text-gray-600 mb-2">Roles</p>
                   <div className="flex flex-wrap gap-2">
                     {teacher.user?.roles?.map(role => (
-                      <Badge key={role.id} variant="info">
-                        {role.name.replace('ROLE_', '')}
+                      <Badge key={typeof role === 'object' ? role.id : role} variant="info">
+                        {typeof role === 'object' && role.name ? role.name.replace('ROLE_', '') : 
+                         typeof role === 'string' ? role.replace('ROLE_', '') : 'UNKNOWN'}
                       </Badge>
                     )) || <span className="text-gray-500">No roles assigned</span>}
                   </div>

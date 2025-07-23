@@ -4,7 +4,8 @@ import { studentService } from '../../services/studentService';
 import { guardianService } from '../../services/guardianService';
 import { reportService } from '../../services/reportService';
 import type { Student, Guardian, Report } from '../../types';
-import { Card, Button, Badge, Table } from '../../components/ui';
+import { Card, Button, Badge, Table, Modal } from '../../components/ui';
+import { GuardianForm } from '../../components/forms';
 import { ArrowLeft, Edit, Plus, Phone } from 'lucide-react';
 import { WhatsAppIcon } from '../../components/common';
 import { toast } from 'react-hot-toast';
@@ -16,6 +17,7 @@ const StudentDetailPage: React.FC = () => {
   const [guardians, setGuardians] = useState<Guardian[]>([]);
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isGuardianModalOpen, setIsGuardianModalOpen] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -179,7 +181,7 @@ const StudentDetailPage: React.FC = () => {
                   </Button>
                   <Button
                     size="sm"
-                    onClick={() => navigate(`/app/guardians?studentId=${student.id}`)}
+                    onClick={() => setIsGuardianModalOpen(true)}
                   >
                     <Plus className="w-4 h-4 mr-2" />
                     Add Guardian
@@ -221,6 +223,29 @@ const StudentDetailPage: React.FC = () => {
           </Card>
         </div>
       </div>
+
+      {/* Guardian Form Modal */}
+      <Modal
+        isOpen={isGuardianModalOpen}
+        onClose={() => setIsGuardianModalOpen(false)}
+        title="Add Guardian"
+      >
+        <GuardianForm
+          onSubmit={async (data) => {
+            if (student) {
+              await guardianService.addGuardianToStudent(student.id, data);
+            }
+          }}
+          onSuccess={() => {
+            setIsGuardianModalOpen(false);
+            if (student) {
+              loadStudentDetails(student.id);
+            }
+            toast.success('Guardian added successfully');
+          }}
+          onCancel={() => setIsGuardianModalOpen(false)}
+        />
+      </Modal>
     </div>
   );
 };

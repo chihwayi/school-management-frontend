@@ -48,10 +48,15 @@ export const financialReportService = {
   
   // Outstanding payments report
   getOutstandingPayments: async (term: string, academicYear: string): Promise<FeePayment[]> => {
-    const response = await api.get('/financial-reports/outstanding-payments', {
-      params: { term, academicYear }
-    });
-    return response.data;
+    try {
+      const response = await api.get('/financial-reports/outstanding-payments', {
+        params: { term, academicYear }
+      });
+      return response.data || [];
+    } catch (error) {
+      console.error('Error getting outstanding payments:', error);
+      return [];
+    }
   },
   
   // Payment audit logs

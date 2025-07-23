@@ -73,9 +73,6 @@ const AttendancePage: React.FC = () => {
     }
   };
 
-  // Track if we've shown the future date message
-  const [shownFutureDateMessage, setShownFutureDateMessage] = useState(false);
-  
   const loadAttendanceForDate = async (date: string) => {
     try {
       // Check if the selected date is in the future
@@ -84,18 +81,17 @@ const AttendancePage: React.FC = () => {
       today.setHours(0, 0, 0, 0); // Reset time part for accurate comparison
       
       if (selectedDateObj > today) {
-        if (!shownFutureDateMessage) {
-          toast('Attendance records for future dates are not available');
-          setShownFutureDateMessage(true);
+        // Only show the message if we're actually loading attendance for a future date
+        // not when the component is just initializing
+        if (date !== new Date().toISOString().split('T')[0]) {
+          toast.info('Attendance records for future dates are not available');
         }
         setAttendanceRecords([]);
         return;
       }
       
-      // Reset the flag when not showing a future date
-      setShownFutureDateMessage(false);
-      
       const attendance = await attendanceService.getAttendanceByDate(date);
+      console.log('Loaded attendance records:', attendance);
       setAttendanceRecords(attendance);
     } catch (error) {
       console.error('Error loading attendance for date:', error);
@@ -116,26 +112,12 @@ const AttendancePage: React.FC = () => {
 
   const handleMarkAttendance = async (studentId: number, present: boolean) => {
     try {
+      console.log(`Marking attendance for student ${studentId} as ${present ? 'present' : 'absent'} on ${selectedDate}`);
       const response = await attendanceService.markAttendance(studentId, selectedDate, present);
+      console.log('Attendance marking response:', response);
       
-      // Update attendance records in state directly without reloading from server
-      setAttendanceRecords(prevRecords => {
-        // Find if there's an existing record for this student
-        const existingIndex = prevRecords.findIndex(r => 
-          r.student.id === studentId && 
-          new Date(r.date).toISOString().split('T')[0] === new Date(selectedDate).toISOString().split('T')[0]
-        );
-        
-        if (existingIndex >= 0) {
-          // Update existing record
-          const updatedRecords = [...prevRecords];
-          updatedRecords[existingIndex] = response;
-          return updatedRecords;
-        } else {
-          // Add new record
-          return [...prevRecords, response];
-        }
-      });
+      // Reload attendance data from server to ensure we have the latest data
+      await loadAttendanceForDate(selectedDate);
       
       toast.success(`Attendance marked successfully`);
     } catch (error) {
@@ -147,35 +129,18 @@ const AttendancePage: React.FC = () => {
   const handleBulkAttendance = async (data: { date: string; attendanceRecords: { studentId: number; present: boolean }[] }) => {
     try {
       setIsLoading(true);
+      console.log('Bulk attendance data:', data);
+      
       const responses = await Promise.all(
         data.attendanceRecords.map(({ studentId, present }) =>
           attendanceService.markAttendance(studentId, data.date, present)
         )
       );
       
-      // Update attendance records in state directly
-      setAttendanceRecords(prevRecords => {
-        const updatedRecords = [...prevRecords];
-        
-        // Process each response and update or add to the records
-        responses.forEach(response => {
-          const studentId = response.student.id;
-          const responseDate = new Date(response.date).toISOString().split('T')[0];
-          
-          const existingIndex = updatedRecords.findIndex(r => 
-            r.student.id === studentId && 
-            new Date(r.date).toISOString().split('T')[0] === responseDate
-          );
-          
-          if (existingIndex >= 0) {
-            updatedRecords[existingIndex] = response;
-          } else {
-            updatedRecords.push(response);
-          }
-        });
-        
-        return updatedRecords;
-      });
+      console.log('Bulk attendance responses:', responses);
+      
+      // Reload attendance data from server
+      await loadAttendanceForDate(data.date);
       
       toast.success('Bulk attendance marked successfully');
       setIsModalOpen(false);

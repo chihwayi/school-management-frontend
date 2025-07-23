@@ -45,13 +45,25 @@ const AssessmentsPage: React.FC = () => {
         // Load assessments for teacher's students
         const allAssessments: Assessment[] = [];
         for (const assignment of assignments) {
-          const students = await studentService.getStudentsByClass(assignment.form, assignment.section);
-          for (const student of students) {
-            const studentAssessments = await assessmentService.getStudentSubjectAssessments(
-              student.id, 
-              assignment.subject.id
-            );
-            allAssessments.push(...studentAssessments);
+          // Skip assignments with missing data
+          if (!assignment?.form || !assignment?.section || !assignment?.subjectId) {
+            console.warn('Skipping assignment with missing data:', assignment);
+            continue;
+          }
+          
+          try {
+            const students = await studentService.getStudentsByClass(assignment.form, assignment.section);
+            for (const student of students) {
+              if (!student?.id) continue;
+              
+              const studentAssessments = await assessmentService.getStudentSubjectAssessments(
+                student.id, 
+                assignment.subjectId // Use subjectId directly instead of assignment.subject.id
+              );
+              allAssessments.push(...studentAssessments);
+            }
+          } catch (error) {
+            console.error(`Error processing assignment ${assignment.id}:`, error);
           }
         }
         setAssessments(allAssessments);

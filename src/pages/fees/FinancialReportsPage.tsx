@@ -138,24 +138,32 @@ const FinancialReportsPage: React.FC = () => {
   };
 
   const exportOutstandingPaymentsToExcel = () => {
-    if (!outstandingPayments) return;
+    if (!outstandingPayments || outstandingPayments.length === 0) {
+      toast.error('No outstanding payments data available to export');
+      return;
+    }
     
-    const formattedData = formatDataForExcel(outstandingPayments, {
-      'student.firstName': 'First Name',
-      'student.lastName': 'Last Name',
-      'student.studentId': 'Student ID',
-      'student.form': 'Form',
-      'student.section': 'Section',
-      'term': 'Term',
-      'academicYear': 'Academic Year',
-      'monthlyFeeAmount': 'Monthly Fee ($)',
-      'amountPaid': 'Amount Paid ($)',
-      'balance': 'Balance ($)',
-      'paymentStatus': 'Payment Status'
-    });
-    
-    exportToExcel(formattedData, `Outstanding_Payments_${reportParams.term}_${reportParams.academicYear}`);
-    toast.success('Outstanding payments exported to Excel');
+    try {
+      const formattedData = formatDataForExcel(outstandingPayments, {
+        'student.firstName': 'First Name',
+        'student.lastName': 'Last Name',
+        'student.studentId': 'Student ID',
+        'student.form': 'Form',
+        'student.section': 'Section',
+        'term': 'Term',
+        'academicYear': 'Academic Year',
+        'monthlyFeeAmount': 'Monthly Fee ($)',
+        'amountPaid': 'Amount Paid ($)',
+        'balance': 'Balance ($)',
+        'paymentStatus': 'Payment Status'
+      });
+      
+      exportToExcel(formattedData, `Outstanding_Payments_${reportParams.term}_${reportParams.academicYear}`);
+      toast.success('Outstanding payments exported to Excel');
+    } catch (error) {
+      console.error('Export error:', error);
+      toast.error('Failed to export data. Please try again.');
+    }
   };
 
   const exportPaymentTrendsToExcel = () => {
@@ -172,7 +180,10 @@ const FinancialReportsPage: React.FC = () => {
   };
 
   const exportClassComparisonToExcel = () => {
-    if (!classComparison) return;
+    if (!classComparison || classComparison.length === 0) {
+      toast.error('No data available to export');
+      return;
+    }
     
     const formattedData = formatDataForExcel(classComparison, {
       'className': 'Class',
@@ -255,7 +266,23 @@ const FinancialReportsPage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Financial Reports</h1>
-        <BarChart3 className="h-8 w-8 text-blue-600" />
+        <div className="flex items-center gap-4">
+          <Button 
+            onClick={async () => {
+              try {
+                await feePaymentService.fixPaymentStatus();
+                toast.success('Payment statuses have been fixed successfully');
+              } catch (error) {
+                console.error('Error fixing payment statuses:', error);
+                toast.error('Failed to fix payment statuses');
+              }
+            }} 
+            className="bg-purple-600 text-white hover:bg-purple-700"
+          >
+            Fix Payment Statuses
+          </Button>
+          <BarChart3 className="h-8 w-8 text-blue-600" />
+        </div>
       </div>
 
       {/* Report Navigation Tabs */}
@@ -694,7 +721,7 @@ const FinancialReportsPage: React.FC = () => {
           
           {classComparisonLoading && <LoadingSpinner />}
           
-          {classComparison && classComparison.length > 0 && (
+          {classComparison && classComparison.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>
@@ -720,6 +747,11 @@ const FinancialReportsPage: React.FC = () => {
                   ))}
                 </tbody>
               </table>
+            </div>
+          ) : (
+            <div className="p-4 text-center bg-gray-50 rounded-md">
+              <p>No class comparison data available for the selected academic year.</p>
+              <p className="text-sm text-gray-500 mt-1">Try a different academic year or check if fee payments have been recorded.</p>
             </div>
           )}
         </Card>
@@ -758,7 +790,7 @@ const FinancialReportsPage: React.FC = () => {
           
           {outstandingLoading && <LoadingSpinner />}
           
-          {outstandingPayments && outstandingPayments.length > 0 && (
+          {outstandingPayments && outstandingPayments.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>
@@ -797,6 +829,11 @@ const FinancialReportsPage: React.FC = () => {
                   ))}
                 </tbody>
               </table>
+            </div>
+          ) : (
+            <div className="p-4 text-center bg-gray-50 rounded-md">
+              <p>No outstanding payments found for the selected term and academic year.</p>
+              <p className="text-sm text-gray-500 mt-1">Try a different term or academic year, or all payments may be complete.</p>
             </div>
           )}
         </Card>

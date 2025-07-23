@@ -35,18 +35,27 @@ const ClassTeacherDashboard: React.FC = () => {
   const { data: teacher, isLoading: teacherLoading } = useQuery({
     queryKey: ['current-teacher'],
     queryFn: teacherService.getCurrentTeacher,
+    onError: (error) => {
+      console.error('Error in current teacher query:', error);
+    }
   });
 
   // Fetch teacher assignments (for subjects they teach)
   const { data: assignments, isLoading: assignmentsLoading } = useQuery({
     queryKey: ['teacher-assignments'],
     queryFn: teacherService.getAssignedSubjectsAndClasses,
+    onError: (error) => {
+      console.error('Error in teacher assignments query:', error);
+    }
   });
 
   // Fetch supervised classes (classes they are class teacher for)
   const { data: supervisedClasses, isLoading: supervisedLoading } = useQuery({
     queryKey: ['supervised-classes'],
     queryFn: teacherService.getSupervisedClasses,
+    onError: (error) => {
+      console.error('Error in supervised classes query:', error);
+    }
   });
 
   const isLoading = teacherLoading || assignmentsLoading || supervisedLoading;
@@ -54,10 +63,10 @@ const ClassTeacherDashboard: React.FC = () => {
   // Calculate stats
   const stats = React.useMemo(() => {
     const totalAssignments = assignments?.length || 0;
-    const uniqueSubjects = new Set(assignments?.map(a => a.subject.id)).size;
-    const uniqueClasses = new Set(assignments?.map(a => `${a.form}-${a.section}`)).size;
+    const uniqueSubjects = assignments ? new Set(assignments.map(a => a?.subject?.id).filter(Boolean)).size : 0;
+    const uniqueClasses = assignments ? new Set(assignments.map(a => a?.form && a?.section ? `${a.form}-${a.section}` : null).filter(Boolean)).size : 0;
     const supervisedClassesCount = supervisedClasses?.length || 0;
-    const totalStudentsInSupervisedClasses = supervisedClasses?.reduce((sum, cls) => sum + (cls.studentCount || 0), 0) || 0;
+    const totalStudentsInSupervisedClasses = supervisedClasses ? supervisedClasses.reduce((sum, cls) => sum + (cls?.studentCount || 0), 0) : 0;
     
     return {
       totalAssignments,
@@ -295,14 +304,14 @@ const ClassTeacherDashboard: React.FC = () => {
                 <div key={assignment.id} className="border rounded-lg p-4">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="font-medium text-gray-900">
-                      {assignment.subject.name}
+                      {assignment.subjectName || 'Unknown Subject'}
                     </h3>
                     <Badge variant="info">
-                      {assignment.form} {assignment.section}
+                      {assignment.form || ''} {assignment.section || ''}
                     </Badge>
                   </div>
                   <p className="text-sm text-gray-600 mb-3">
-                    Subject Code: {assignment.subject.code}
+                    Subject Code: {assignment.subjectCode || 'N/A'}
                   </p>
                   <div className="flex space-x-2">
                     <Button

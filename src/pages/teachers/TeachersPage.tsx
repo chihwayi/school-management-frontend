@@ -178,10 +178,18 @@ const TeachersPage: React.FC = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Teachers Management</h1>
         {canManageTeachers() && (
-          <Button onClick={() => setIsModalOpen(true)} useTheme>
-            <Plus className="w-4 h-4 mr-2" />
-            Add Teacher
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => navigate('/app/teachers/subjects')}
+            >
+              Bulk Subject Assignments
+            </Button>
+            <Button onClick={() => setIsModalOpen(true)} useTheme>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Teacher
+            </Button>
+          </div>
         )}
       </div>
 

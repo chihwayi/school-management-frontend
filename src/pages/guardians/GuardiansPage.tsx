@@ -281,6 +281,17 @@ const GuardiansPage: React.FC = () => {
       >
         <GuardianForm
           guardian={selectedGuardian || undefined}
+          onSubmit={async (data) => {
+            if (selectedStudent) {
+              if (selectedGuardian) {
+                // Update existing guardian
+                await guardianService.updateGuardian(selectedGuardian.id, data);
+              } else {
+                // Add new guardian
+                await guardianService.addGuardianToStudent(selectedStudent.id, data);
+              }
+            }
+          }}
           onSuccess={handleFormSuccess}
           onCancel={() => setIsFormModalOpen(false)}
         />

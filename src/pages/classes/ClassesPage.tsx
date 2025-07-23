@@ -34,22 +34,62 @@ const ClassesPage: React.FC = () => {
   const loadClasses = async () => {
     try {
       setLoading(true);
-      // Load classes and students in parallel
-      const [classesData, studentsData] = await Promise.all([
-        classService.getAllClassGroups(),
-        studentService.getAllStudents()
-      ]);
+      
+      // Check if user is a teacher
+      const { isTeacher } = useRoleCheck();
+      
+      let classesData;
+      if (isTeacher()) {
+        // For teachers, only load their assigned classes
+        try {
+          // First try to get supervised classes (as class teacher)
+          const supervisedClasses = await teacherService.getSupervisedClasses();
+          
+          // Then get classes they teach subjects in
+          const teachingAssignments = await teacherService.getAssignedSubjectsAndClasses();
+          
+          // Extract unique classes from teaching assignments
+          const teachingClasses = teachingAssignments.reduce((classes: any[], assignment: any) => {
+            if (!classes.some(c => c.form === assignment.form && c.section === assignment.section)) {
+              classes.push({
+                id: assignment.classGroupId || 0,
+                form: assignment.form,
+                section: assignment.section,
+                academicYear: assignment.academicYear || new Date().getFullYear().toString()
+              });
+            }
+            return classes;
+          }, []);
+          
+          // Combine both sets of classes (supervised and teaching)
+          classesData = [...supervisedClasses, ...teachingClasses];
+          
+          // Remove duplicates
+          classesData = classesData.filter((class1, index, self) => 
+            index === self.findIndex(class2 => class2.id === class1.id)
+          );
+        } catch (error) {
+          console.error('Error loading teacher classes:', error);
+          classesData = [];
+        }
+      } else {
+        // For admin/clerk, load all classes
+        classesData = await classService.getAllClassGroups();
+      }
+      
+      // Load students
+      const studentsData = await studentService.getAllStudents();
 
       console.log('Raw classes data from API:', classesData);
 
       // Map classes with student counts
-      const classesWithStudents = classesData.map(classGroup => {
+      const classesWithStudents = classesData.map((classGroup: any) => {
         // Count students with matching form and section, handling different academic year formats
-        const matchingStudents = studentsData.filter(student =>
+        const matchingStudents = studentsData.filter((student: any) =>
           student.form === classGroup.form &&
           student.section === classGroup.section &&
           (student.academicYear === classGroup.academicYear ||
-            student.academicYear.includes(classGroup.academicYear))
+            student.academicYear?.includes(classGroup.academicYear))
         );
 
         return {

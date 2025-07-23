@@ -5,7 +5,6 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Toaster } from 'react-hot-toast';
 
 // Common Components
-import ProtectedRoute from './components/common/ProtectedRoute';
 import ThemeProvider from './components/common/ThemeProvider';
 import LoadingSpinner from './components/common/LoadingSpinner';
 import MainLayout from './components/layout/MainLayout';
@@ -16,13 +15,10 @@ import SchoolSetupPage from './pages/setup/SchoolSetupPage';
 
 // Dashboard Pages
 import DashboardPage from './pages/dashboard/DashboardPage';
-import AdminDashboard from './pages/dashboard/AdminDashboard';
-import TeacherDashboard from './pages/dashboard/TeacherDashboard';
-import ClassTeacherDashboard from './pages/dashboard/ClassTeacherDashboard';
 
 // Management Pages
 import { StudentsPage, StudentDetailPage } from './pages/students';
-import { TeachersPage, TeacherDetailPage } from './pages/teachers';
+import { TeachersPage, TeacherDetailPage, TeacherSubjectAssignmentPage } from './pages/teachers';
 import { ClassesPage, ClassDetailPage } from './pages/classes';
 import { SubjectsPage, SubjectDetailPage } from './pages/subjects';
 import { AssessmentsPage, AssessmentDetailPage } from './pages/assessments';
@@ -35,7 +31,6 @@ import { UserManagementPage } from './pages/users';
 
 // Hooks
 import { useAuth } from './hooks/useAuth';
-import { ERole } from './types';
 
 // Create a client instance
 const queryClient = new QueryClient({
@@ -144,6 +139,7 @@ const App: React.FC = () => {
                 <Route path="teachers" element={<TeachersPage />} />
                 <Route path="teachers/:id" element={<TeacherDetailPage />} />
                 <Route path="teachers/:id/edit" element={<TeachersPage />} />
+                <Route path="teachers/subjects" element={<TeacherSubjectAssignmentPage />} />
 
                 {/* Class Management */}
                 <Route path="classes" element={<ClassesPage />} />
