@@ -6,6 +6,7 @@ import { toast } from 'react-hot-toast';
 
 const SignatureUpload: React.FC = () => {
   const [signature, setSignature] = useState<SignatureData | null>(null);
+  const [hasTeacherRecord, setHasTeacherRecord] = useState<boolean>(true);
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
@@ -16,8 +17,14 @@ const SignatureUpload: React.FC = () => {
     try {
       const signatureData = await signatureService.getMySignature();
       setSignature(signatureData);
+      setHasTeacherRecord(true);
     } catch (error) {
       console.error('Error loading signature:', error);
+      // Check if it's a 500 error (no teacher record)
+      if (error.response?.status === 500) {
+        setHasTeacherRecord(false);
+      }
+      setSignature(null);
     }
   };
 
@@ -31,6 +38,7 @@ const SignatureUpload: React.FC = () => {
       setUploading(true);
       const uploadedSignature = await signatureService.uploadSignature(file);
       setSignature(uploadedSignature);
+      setHasTeacherRecord(true);
       toast.success('Signature uploaded successfully');
     } catch (error) {
       toast.error('Failed to upload signature');
@@ -76,6 +84,13 @@ const SignatureUpload: React.FC = () => {
         </div>
       ) : (
         <div className="space-y-4">
+          {!hasTeacherRecord && (
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-800">
+                System will automatically create your teacher profile when you upload your signature.
+              </p>
+            </div>
+          )}
           <div className="border-2 border-dashed rounded-lg p-8 text-center">
             <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h4 className="text-lg font-medium text-gray-900 mb-2">Upload Your Signature</h4>

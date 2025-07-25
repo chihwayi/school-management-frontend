@@ -21,6 +21,7 @@ import {
 import { Card, Button } from '../../components/ui';
 import  LoadingSpinner  from '../../components/common/LoadingSpinner';
 import MinistryLogoUpload from '../../components/admin/MinistryLogoUpload';
+import SignatureUpload from '../../components/signatures/SignatureUpload';
 import { studentService } from '../../services/studentService';
 import { teacherService } from '../../services/teacherService';
 import { subjectService } from '../../services/subjectService';
@@ -305,8 +306,11 @@ const AdminDashboard: React.FC = () => {
         ))}
       </div>
 
-      {/* Ministry Logo Upload */}
-      <MinistryLogoUpload />
+      {/* Admin Uploads */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <MinistryLogoUpload />
+        <SignatureUpload />
+      </div>
 
       {/* Recent Activity Section */}
       <Card className="p-6">
