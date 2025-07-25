@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../hooks/useAuth';
 import { Card, Button, Select, Table } from '../../components/ui';
 import { studentService } from '../../services/studentService';
 import { reportService, type StudentReport } from '../../services/reportService';
 import { signatureService } from '../../services/signatureService';
+import { ministryService } from '../../services/ministryService';
+import { useAuth } from '../../hooks/useAuth';
 import { Printer, Download, Eye, FileText } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
@@ -65,14 +66,17 @@ const PrintReportsPage: React.FC = () => {
     }
   };
 
+  const { school } = useAuth();
+  
   const printReport = async (studentId: number) => {
     const report = reports.find(r => r.studentId === studentId);
     if (report) {
       try {
-        // Load signatures
-        const [principalSig, classTeacherSig] = await Promise.all([
+        // Load signatures and ministry logo
+        const [principalSig, classTeacherSig, ministryLogo] = await Promise.all([
           signatureService.getPrincipalSignature(),
-          signatureService.getClassTeacherSignature(report.form, report.section)
+          signatureService.getClassTeacherSignature(report.form, report.section),
+          ministryService.getCurrentMinistryLogo()
         ]);
         
         const printWindow = window.open('', '_blank', 'width=800,height=600');
@@ -91,9 +95,22 @@ const PrintReportsPage: React.FC = () => {
               </head>
               <body>
                 <div class="header">
-                  <h1>STUDENT PROGRESS REPORT</h1>
-                  <h2>${report.studentName} - ${report.form} ${report.section}</h2>
-                  <h3>${selectedTerm} ${selectedYear}</h3>
+                  <div class="logos" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div class="ministry-logo">
+                      ${ministryLogo ? `<img src="http://localhost:8080${ministryLogo}" alt="Ministry Logo" style="max-height: 60px; max-width: 120px;">` : ''}
+                    </div>
+                    <div class="school-info" style="text-align: center; flex: 1;">
+                      <h1>STUDENT PROGRESS REPORT</h1>
+                      <h2>${school?.name || 'School Name'}</h2>
+                    </div>
+                    <div class="school-logo">
+                      ${school?.logoPath ? `<img src="http://localhost:8080${school.logoPath}" alt="School Logo" style="max-height: 60px; max-width: 120px;">` : ''}
+                    </div>
+                  </div>
+                  <div style="text-align: center;">
+                    <h2>${report.studentName} - ${report.form} ${report.section}</h2>
+                    <h3>${selectedTerm} ${selectedYear}</h3>
+                  </div>
                 </div>
                 
                 <h3>Subject Performance:</h3>
