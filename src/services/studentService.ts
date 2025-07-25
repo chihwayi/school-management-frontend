@@ -53,5 +53,29 @@ export const studentService = {
   promoteStudentsToALevel: async (promotionData: PromotionToALevelDTO): Promise<Student[]> => {
     const response = await api.post('/students/batch/promote-to-a-level', promotionData);
     return response.data;
-  }
+  },
+
+  bulkAssignSubjectsToClass: async (form: string, section: string, subjectIds: number[]): Promise<void> => {
+    const response = await api.post('/students/bulk-assign-subjects', {
+      form,
+      section,
+      subjectIds
+    });
+    return response.data;
+  },
+
+  // Hybrid assignment method - handles single, bulk class, and bulk custom assignments
+  assignSubjects: async (assignmentData: {
+    studentIds?: number[];
+    subjectIds: number[];
+    form?: string;
+    section?: string;
+    academicYear?: string;
+    assignmentType: 'SINGLE' | 'BULK_CLASS' | 'BULK_CUSTOM';
+  }): Promise<StudentSubject[]> => {
+    const response = await api.post('/students/assign-subjects', assignmentData);
+    return response.data;
+  },
+
+
 };

@@ -17,6 +17,7 @@ export { default as SubjectAssignmentForm } from './SubjectAssignmentForm';
 // Assignment Forms
 export { default as TeacherAssignmentForm } from './TeacherAssignmentForm';
 export { default as ClassTeacherAssignmentForm } from './ClassTeacherAssignmentForm';
+export { StudentSubjectAssignmentForm } from './StudentSubjectAssignmentForm';
 
 // Assessment Forms
 export { default as AssessmentForm } from './AssessmentForm';

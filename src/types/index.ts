@@ -231,11 +231,20 @@ export interface Assessment {
   type: AssessmentType;
   term: string;
   academicYear: string;
-  studentSubject: StudentSubject;
+  studentId: number;
+  studentFirstName: string;
+  studentLastName: string;
+  studentForm: string;
+  studentSection: string;
+  subjectId: number;
+  subjectName: string;
+  subjectCode: string;
+  percentage: number;
 }
 
 export interface AssessmentDTO {
-  studentSubjectId: number;
+  studentId: number;
+  subjectId: number;
   title: string;
   date: string;
   score: number;

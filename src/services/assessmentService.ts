@@ -3,8 +3,16 @@ import type { Assessment, AssessmentDTO, AssessmentUpdateDTO } from '../types';
 
 export const assessmentService = {
   recordAssessment: async (assessmentData: AssessmentDTO): Promise<Assessment> => {
-    const response = await api.post('/assessments', assessmentData);
-    return response.data;
+    try {
+      const response = await api.post('/assessments', assessmentData);
+      return response.data;
+    } catch (error: any) {
+      console.error('Assessment recording error:', error);
+      if (error.response?.status === 403) {
+        throw new Error('You do not have permission to record assessments. Please contact your administrator.');
+      }
+      throw error;
+    }
   },
 
   getStudentSubjectAssessments: async (studentId: number, subjectId: number): Promise<Assessment[]> => {

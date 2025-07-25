@@ -30,6 +30,7 @@ const SubjectDetailPage: React.FC = () => {
   const [subject, setSubject] = useState<Subject | null>(null);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
+  const [classes, setClasses] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
@@ -48,20 +49,15 @@ const SubjectDetailPage: React.FC = () => {
       const subjectData = await subjectService.getSubjectById(subjectId);
       setSubject(subjectData);
       
-      // Load teachers and students (you might need to implement these endpoints)
-      // For now, we'll load all teachers and filter those assigned to this subject
-      const allTeachers = await teacherService.getAllTeachers();
-      const subjectTeachers = allTeachers.filter(teacher => 
-        teacher.assignedSubjects?.some(assignment => assignment.subject.id === subjectId)
-      );
+      // Load teachers, students, and classes for this subject
+      const [subjectTeachers, subjectStudents, subjectClasses] = await Promise.all([
+        subjectService.getTeachersBySubject(subjectId),
+        subjectService.getStudentsBySubject(subjectId),
+        subjectService.getClassesBySubject(subjectId)
+      ]);
       setTeachers(subjectTeachers);
-      
-      // Load students enrolled in this subject
-      const allStudents = await studentService.getAllStudents();
-      const subjectStudents = allStudents.filter(student =>
-        student.subjects?.some(subj => subj.id === subjectId)
-      );
       setStudents(subjectStudents);
+      setClasses(subjectClasses);
       
     } catch (error) {
       toast.error('Failed to load subject details');
@@ -236,13 +232,7 @@ const SubjectDetailPage: React.FC = () => {
             <School className="h-8 w-8 text-purple-600" />
             <div className="ml-3">
               <p className="text-sm font-medium text-gray-600">Classes</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {new Set(teachers.flatMap(t => 
-                  t.assignedSubjects
-                    ?.filter(a => a.subject.id === subject.id)
-                    .map(a => `${a.form} ${a.section}`) || []
-                )).size}
-              </p>
+              <p className="text-2xl font-bold text-gray-900">{classes.length}</p>
             </div>
           </div>
         </Card>
@@ -276,13 +266,11 @@ const SubjectDetailPage: React.FC = () => {
                   </Table.Cell>
                   <Table.Cell>
                     <div className="flex flex-wrap gap-1">
-                      {teacher.assignedSubjects
-                        ?.filter(assignment => assignment.subject.id === subject?.id)
-                        .map((assignment, index) => (
-                          <Badge key={index} className="bg-blue-100 text-blue-800">
-                            {assignment.form} {assignment.section}
-                          </Badge>
-                        ))}
+                      {teacher.classes?.map((className, index) => (
+                        <Badge key={`${teacher.id}-${className}-${index}`} className="bg-blue-100 text-blue-800">
+                          {className}
+                        </Badge>
+                      ))}
                     </div>
                   </Table.Cell>
                 </Table.Row>

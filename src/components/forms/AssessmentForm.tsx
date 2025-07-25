@@ -1,16 +1,18 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
 import { Button, Input, Select } from '../ui';
 import type { AssessmentDTO, Assessment } from '../../types';
 import { AssessmentType } from '../../types';
 import { formatAssessmentType } from '../../utils';
+import { teacherService } from '../../services/teacherService';
+import { studentService } from '../../services/studentService';
 
 interface AssessmentFormProps {
   onSubmit: (data: AssessmentDTO) => Promise<void>;
   onCancel: () => void;
   initialData?: Assessment;
-  studentSubjectId: number;
+  studentSubjectId?: number;
   isLoading?: boolean;
 }
 
@@ -18,18 +20,75 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
   onSubmit,
   onCancel,
   initialData,
-  studentSubjectId,
+  studentSubjectId = 0,
   isLoading = false
 }) => {
+  const [teacherAssignments, setTeacherAssignments] = useState<any[]>([]);
+  const [students, setStudents] = useState<any[]>([]);
+  const [selectedAssignment, setSelectedAssignment] = useState<any>(null);
+  const [selectedStudent, setSelectedStudent] = useState<any>(null);
+  
+  useEffect(() => {
+    loadTeacherAssignments();
+  }, []);
+  
+  const loadTeacherAssignments = async () => {
+    try {
+      const assignments = await teacherService.getAssignedSubjectsAndClasses();
+      setTeacherAssignments(assignments);
+      
+      // If editing, find and set the matching assignment
+      if (initialData) {
+        const matchingAssignment = assignments.find(a => 
+          a.subjectId === initialData.subjectId && 
+          a.form === initialData.studentForm && 
+          a.section === initialData.studentSection
+        );
+        if (matchingAssignment) {
+          setSelectedAssignment(matchingAssignment);
+          await loadStudentsForClass(initialData.studentForm, initialData.studentSection);
+          // Set the selected student after students are loaded
+          setTimeout(() => {
+            const student = { id: initialData.studentId };
+            setSelectedStudent(student);
+          }, 100);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading teacher assignments:', error);
+    }
+  };
+  
+  const loadStudentsForClass = async (form: string, section: string) => {
+    try {
+      const studentsData = await studentService.getStudentsByClass(form, section);
+      setStudents(studentsData);
+    } catch (error) {
+      console.error('Error loading students:', error);
+    }
+  };
+  
+  const handleAssignmentChange = (assignmentId: string) => {
+    const assignment = teacherAssignments.find(a => a.id.toString() === assignmentId);
+    setSelectedAssignment(assignment);
+    setSelectedStudent(null); // Reset student selection
+    setStudents([]); // Clear students list
+    if (assignment) {
+      loadStudentsForClass(assignment.form, assignment.section);
+    }
+  };
   const {
     register,
     handleSubmit,
     formState: { errors },
-    reset
+    reset,
+    watch,
+    setValue
   } = useForm<AssessmentDTO>({
     defaultValues: initialData
       ? {
-          studentSubjectId: initialData.studentSubject.id,
+          studentId: initialData.studentId,
+          subjectId: initialData.subjectId,
           title: initialData.title,
           date: initialData.date,
           score: initialData.score,
@@ -39,7 +98,8 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
           academicYear: initialData.academicYear
         }
       : {
-          studentSubjectId,
+          studentId: 0,
+          subjectId: 0,
           title: '',
           date: new Date().toISOString().split('T')[0],
           score: 0,
@@ -49,18 +109,31 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
           academicYear: new Date().getFullYear().toString()
         }
   });
+  
+  const handleStudentChange = (studentId: string) => {
+    const student = students.find(s => s.id.toString() === studentId);
+    setSelectedStudent(student);
+    
+    if (student && selectedAssignment) {
+      const subjectId = selectedAssignment.subject?.id || selectedAssignment.subjectId;
+      setValue('studentId', student.id);
+      setValue('subjectId', subjectId);
+    }
+  };
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const handleFormSubmit = async (data: AssessmentDTO) => {
+    if (isSubmitting) return; // Prevent multiple submissions
+    
     try {
+      setIsSubmitting(true);
       await onSubmit(data);
-      toast.success(
-        initialData
-          ? 'Assessment updated successfully!'
-          : 'Assessment created successfully!'
-      );
       reset();
     } catch (error) {
-      toast.error('Failed to save assessment');
+      console.error('Form submission error:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -84,6 +157,37 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <Select
+            label="Subject & Class"
+            options={[
+              { value: '', label: 'Select Subject & Class' },
+              ...teacherAssignments.map(assignment => ({
+                value: assignment.id.toString(),
+                label: `${assignment.subject?.name || assignment.subjectName} - ${assignment.form} ${assignment.section}`
+              }))
+            ]}
+            value={selectedAssignment?.id?.toString() || ''}
+            onChange={(e) => handleAssignmentChange(e.target.value)}
+          />
+        </div>
+        
+        <div>
+          <Select
+            label="Student"
+            options={[
+              { value: '', label: 'Select Student' },
+              ...students.map(student => ({
+                value: student.id.toString(),
+                label: `${student.firstName} ${student.lastName} (${student.studentId})`
+              }))
+            ]}
+            value={selectedStudent?.id?.toString() || (initialData ? initialData.studentId.toString() : '')}
+            onChange={(e) => handleStudentChange(e.target.value)}
+            disabled={!selectedAssignment}
+          />
+        </div>
+        
         <div>
           <Input
             label="Assessment Title"
@@ -189,7 +293,8 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
         </Button>
         <Button
           type="submit"
-          loading={isLoading}
+          loading={isLoading || isSubmitting}
+          disabled={isSubmitting}
         >
           {initialData ? 'Update Assessment' : 'Create Assessment'}
         </Button>

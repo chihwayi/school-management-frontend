@@ -1,48 +1,76 @@
 import api from './api';
 
+interface StudentReport {
+  id: number;
+  studentId: number;
+  studentName: string;
+  form: string;
+  section: string;
+  term: string;
+  academicYear: string;
+  subjectReports: SubjectReport[];
+  overallComment?: string;
+  finalized: boolean;
+}
+
+interface SubjectReport {
+  id: number;
+  subjectId: number;
+  subjectName: string;
+  subjectCode: string;
+  courseworkMark?: number;
+  examMark?: number;
+  finalMark: number;
+  comment?: string;
+  teacherId?: number;
+  teacherName?: string;
+}
+
+interface SubjectCommentDTO {
+  reportId: number;
+  subjectId: number;
+  comment: string;
+}
+
+interface OverallCommentDTO {
+  reportId: number;
+  comment: string;
+}
+
+// Export interfaces
+export type { StudentReport, SubjectReport, SubjectCommentDTO, OverallCommentDTO };
+
 export const reportService = {
-  getStudentReports: async (studentId: number) => {
-    const response = await api.get(`/api/reports/student/${studentId}`);
+  // Get reports for class teacher's supervised classes
+  getClassReports: async (form: string, section: string, term: string, year: string): Promise<StudentReport[]> => {
+    const response = await api.get(`/reports/class/${form}/${section}/${term}/${year}`);
     return response.data;
   },
-  
-  getReportById: async (reportId: number) => {
-    const response = await api.get(`/api/reports/${reportId}`);
+
+  // Get reports for teacher's assigned subjects
+  getSubjectReports: async (subjectId: number, form: string, section: string, term: string, year: string): Promise<StudentReport[]> => {
+    const response = await api.get(`/reports/subject/${subjectId}/${form}/${section}/${term}/${year}`);
     return response.data;
   },
-  
-  getReportsByFormAndSection: async (form: string, section: string, term: string, year: string) => {
-    const response = await api.get(`/api/reports/class/form/${form}/section/${section}/term/${term}/year/${year}`);
-    return response.data;
+
+  // Add subject comment
+  addSubjectComment: async (commentData: SubjectCommentDTO): Promise<void> => {
+    await api.post('/reports/subject-comment', commentData);
   },
-  
-  getClassReports: async (classId: number, term: string, year: string) => {
-    const response = await api.get(`/api/reports/class/${classId}/term/${term}/year/${year}`);
-    return response.data;
+
+  // Add overall comment (class teacher only)
+  addOverallComment: async (commentData: OverallCommentDTO): Promise<void> => {
+    await api.post('/reports/overall-comment', commentData);
   },
-  
-  generateClassReports: async (classId: number, term: string, year: string) => {
-    const response = await api.post(`/api/reports/generate/class/${classId}/term/${term}/year/${year}`);
-    return response.data;
+
+  // Finalize report (class teacher only)
+  finalizeReport: async (reportId: number): Promise<void> => {
+    await api.post(`/reports/${reportId}/finalize`);
   },
-  
-  addSubjectComment: async (reportId: number, subjectId: number, comment: string) => {
-    const response = await api.post(`/api/reports/${reportId}/subject-comment`, {
-      subjectId,
-      comment
-    });
-    return response.data;
-  },
-  
-  addOverallComment: async (reportId: number, comment: string) => {
-    const response = await api.post(`/api/reports/${reportId}/overall-comment`, {
-      comment
-    });
-    return response.data;
-  },
-  
-  finalizeReport: async (reportId: number) => {
-    const response = await api.post(`/api/reports/${reportId}/finalize`);
+
+  // Generate report for student
+  generateStudentReport: async (studentId: number, term: string, year: string): Promise<StudentReport> => {
+    const response = await api.post('/reports/generate', { studentId, term, year });
     return response.data;
   }
 };

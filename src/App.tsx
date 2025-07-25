@@ -17,13 +17,15 @@ import SchoolSetupPage from './pages/setup/SchoolSetupPage';
 import DashboardPage from './pages/dashboard/DashboardPage';
 
 // Management Pages
-import { StudentsPage, StudentDetailPage } from './pages/students';
+import { StudentsPage, StudentDetailPage, StudentSubjectAssignmentPage } from './pages/students';
 import { TeachersPage, TeacherDetailPage, TeacherSubjectAssignmentPage } from './pages/teachers';
 import { ClassesPage, ClassDetailPage } from './pages/classes';
 import { SubjectsPage, SubjectDetailPage } from './pages/subjects';
 import { AssessmentsPage, AssessmentDetailPage } from './pages/assessments';
 import { AttendancePage, AttendanceDetailPage } from './pages/attendance';
-import { ReportsPage, ReportDetailPage } from './pages/reports';
+import ReportsPage from './pages/reports/ReportsPage';
+import PrintReportsPage from './pages/reports/PrintReportsPage';
+import { ReportDetailPage } from './pages/reports';
 import { GuardiansPage, GuardianDetailPage } from './pages/guardians';
 import { FeePaymentPage, PaymentStatusPage, FinancialReportsPage, FeeSettingsPage } from './pages/fees';
 import SectionsPage from './pages/sections/SectionsPage';
@@ -131,8 +133,8 @@ const App: React.FC = () => {
 
                 {/* Student Management */}
                 <Route path="students" element={<StudentsPage />} />
-                <Route path="students" element={<StudentsPage />} />
                 <Route path="students/:id" element={<StudentDetailPage />} />
+                <Route path="students/subjects" element={<StudentSubjectAssignmentPage />} />
                 <Route path="students/:id/guardians/add" element={<div>Add Guardian - Coming Soon</div>} />
 
                 {/* Teacher Management */}
@@ -159,6 +161,7 @@ const App: React.FC = () => {
 
                 {/* Report Management */}
                 <Route path="reports" element={<ReportsPage />} />
+                <Route path="reports/print" element={<PrintReportsPage />} />
                 <Route path="reports/:id" element={<ReportDetailPage />} />
 
                 {/* Guardian Management */}

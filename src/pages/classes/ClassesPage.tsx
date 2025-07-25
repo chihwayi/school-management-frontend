@@ -12,7 +12,7 @@ import { studentService } from '@/services/studentService';
 
 const ClassesPage: React.FC = () => {
   const { isAuthenticated } = useAuth();
-  const { canManageClasses } = useRoleCheck();
+  const { canManageClasses, isTeacher } = useRoleCheck();
   const navigate = useNavigate();
   const [classes, setClasses] = useState<ClassGroup[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
@@ -34,9 +34,6 @@ const ClassesPage: React.FC = () => {
   const loadClasses = async () => {
     try {
       setLoading(true);
-      
-      // Check if user is a teacher
-      const { isTeacher } = useRoleCheck();
       
       let classesData;
       if (isTeacher()) {

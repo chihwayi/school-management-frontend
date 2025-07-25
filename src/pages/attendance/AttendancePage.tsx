@@ -47,21 +47,35 @@ const AttendancePage: React.FC = () => {
   const loadInitialData = async () => {
     setIsLoading(true);
     try {
-      const [teacherData, classesData] = await Promise.all([
-        teacherService.getCurrentTeacher(),
-        classService.getAllClassGroups()
-      ]);
-
+      // Get current teacher data
+      const teacherData = await teacherService.getCurrentTeacher();
       setCurrentTeacher(teacherData);
-      setClasses(classesData);
-
-      // If teacher has supervised classes, set the first one as default
-      if (teacherData.supervisedClasses && teacherData.supervisedClasses.length > 0) {
-        const firstClass = teacherData.supervisedClasses[0];
-        setSelectedClass(`${firstClass.form}-${firstClass.section}`);
-      } else if (classesData.length > 0) {
-        const firstClass = classesData[0];
-        setSelectedClass(`${firstClass.form}-${firstClass.section}`);
+      console.log('Teacher data:', teacherData);
+      
+      // Get supervised classes directly from the API
+      const supervisedClasses = await teacherService.getSupervisedClasses();
+      console.log('Supervised classes:', supervisedClasses);
+      
+      // Set these as the only available classes
+      setClasses(supervisedClasses);
+      
+      // If there are supervised classes, set the first one as default
+      // or use the one from URL parameters if available
+      if (supervisedClasses.length > 0) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const classParam = urlParams.get('class');
+        
+        if (classParam && supervisedClasses.some(c => `${c.form}-${c.section}` === classParam)) {
+          // Use the class from URL if it's one of the supervised classes
+          setSelectedClass(classParam);
+        } else {
+          // Otherwise use the first supervised class
+          const firstClass = supervisedClasses[0];
+          setSelectedClass(`${firstClass.form}-${firstClass.section}`);
+        }
+      } else {
+        console.warn('No supervised classes found for this teacher');
+        toast.warning('You are not assigned as a class teacher to any class');
       }
 
       await loadAttendanceForDate(selectedDate);
@@ -362,7 +376,7 @@ const AttendancePage: React.FC = () => {
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4 text-gray-500" />
             <label htmlFor="class" className="text-sm font-medium text-gray-700">
-              Class:
+              Your Class:
             </label>
             <Select
               id="class"
@@ -371,12 +385,15 @@ const AttendancePage: React.FC = () => {
               className="w-auto"
               options={classes.map(cls => ({ value: `${cls.form}-${cls.section}`, label: `${cls.form} ${cls.section}` }))}
             >
-              <option value="">Select Class</option>
-              {classes.map((cls) => (
-                <option key={cls.id} value={`${cls.form}-${cls.section}`}>
-                  {cls.form} {cls.section}
-                </option>
-              ))}
+              {classes.length === 0 ? (
+                <option value="">No classes assigned</option>
+              ) : (
+                classes.map((cls) => (
+                  <option key={cls.id} value={`${cls.form}-${cls.section}`}>
+                    {cls.form} {cls.section}
+                  </option>
+                ))
+              )}
             </Select>
           </div>
 

@@ -13,8 +13,8 @@ import { useNavigate } from 'react-router-dom';
 import { formatAssessmentType } from '../../utils';
 
 const AssessmentsPage: React.FC = () => {
-  const { isAuthenticated } = useAuth();
-  const { canRecordAssessments, isTeacher, canManageUsers } = useRoleCheck();
+  const { isAuthenticated, user } = useAuth();
+  const { canRecordAssessments, isTeacher, canManageUsers, isClassTeacher } = useRoleCheck();
   const navigate = useNavigate();
   
   const [assessments, setAssessments] = useState<Assessment[]>([]);
@@ -81,6 +81,10 @@ const AssessmentsPage: React.FC = () => {
   };
 
   const handleCreateAssessment = () => {
+    if (teacherAssignments.length === 0) {
+      toast.error('You have no subject assignments. Please contact your administrator.');
+      return;
+    }
     setSelectedAssessment(null);
     setIsModalOpen(true);
   };
@@ -124,14 +128,14 @@ const AssessmentsPage: React.FC = () => {
     return assessments.filter(assessment => {
       const matchesSearch = 
         assessment.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        assessment.studentSubject.student.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        assessment.studentSubject.student.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        assessment.studentSubject.subject.name.toLowerCase().includes(searchTerm.toLowerCase());
+        assessment.studentFirstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        assessment.studentLastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        assessment.subjectName.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesType = !typeFilter || assessment.type === typeFilter;
       const matchesTerm = !termFilter || assessment.term === termFilter;
       const matchesClass = !classFilter || 
-        `${assessment.studentSubject.student.form} ${assessment.studentSubject.student.section}`.includes(classFilter);
+        `${assessment.studentForm} ${assessment.studentSection}`.includes(classFilter);
 
       return matchesSearch && matchesType && matchesTerm && matchesClass;
     });
@@ -140,7 +144,7 @@ const AssessmentsPage: React.FC = () => {
   const getUniqueClasses = () => {
     const classes = new Set<string>();
     assessments.forEach(assessment => {
-      classes.add(`${assessment.studentSubject.student.form} ${assessment.studentSubject.student.section}`);
+      classes.add(`${assessment.studentForm} ${assessment.studentSection}`);
     });
     return Array.from(classes).sort();
   };
@@ -177,8 +181,13 @@ const AssessmentsPage: React.FC = () => {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Assessments</h1>
           <p className="text-gray-600">Manage student assessments and exam results</p>
+          {canRecordAssessments() && teacherAssignments.length === 0 && (
+            <p className="text-amber-600 text-sm mt-1">
+              You have no subject assignments. Contact your administrator to assign subjects.
+            </p>
+          )}
         </div>
-        {canRecordAssessments() && (
+        {canRecordAssessments() && teacherAssignments.length > 0 && (
           <Button onClick={handleCreateAssessment} className="flex items-center space-x-2">
             <Plus className="h-4 w-4" />
             <span>Record Assessment</span>
@@ -317,17 +326,17 @@ const AssessmentsPage: React.FC = () => {
                   <Table.Cell>
                     <div>
                       <div className="font-medium">
-                        {assessment.studentSubject.student.firstName} {assessment.studentSubject.student.lastName}
+                        {assessment.studentFirstName} {assessment.studentLastName}
                       </div>
                       <div className="text-sm text-gray-500">
-                        {assessment.studentSubject.student.form} {assessment.studentSubject.student.section}
+                        {assessment.studentForm} {assessment.studentSection}
                       </div>
                     </div>
                   </Table.Cell>
                   <Table.Cell>
                     <div>
-                      <div className="font-medium">{assessment.studentSubject.subject.name}</div>
-                      <div className="text-sm text-gray-500">{assessment.studentSubject.subject.code}</div>
+                      <div className="font-medium">{assessment.subjectName}</div>
+                      <div className="text-sm text-gray-500">{assessment.subjectCode}</div>
                     </div>
                   </Table.Cell>
                   <Table.Cell>
@@ -402,7 +411,6 @@ const AssessmentsPage: React.FC = () => {
       >
         <AssessmentForm
           initialData={selectedAssessment || undefined}
-          studentSubjectId={selectedAssessment?.studentSubject.id || 0}
           onSubmit={handleAssessmentSubmit}
           onCancel={() => setIsModalOpen(false)}
         />

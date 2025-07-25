@@ -73,8 +73,20 @@ export const teacherService = {
   },
   
   saveTeacherAssignments: async (teacherId: number, assignments: SubjectAssignment[]): Promise<TeacherAssignment[]> => {
-    const response = await api.post(`/teachers/${teacherId}/bulk-assignments`, { assignments });
-    return response.data;
+    try {
+      console.log('Sending bulk assignment request:', {
+        teacherId,
+        assignments,
+        url: `/teachers/${teacherId}/bulk-assignments`
+      });
+      
+      const response = await api.post(`/teachers/${teacherId}/bulk-assignments`, { assignments });
+      console.log('Bulk assignment response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error in saveTeacherAssignments:', error);
+      throw error;
+    }
   },
 
   // New functions for ClassTeacherDashboard

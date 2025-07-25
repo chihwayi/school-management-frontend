@@ -34,29 +34,15 @@ const TeacherDetailPage: React.FC = () => {
         // For now, use empty arrays for classes
         setSupervisedClasses([]);
         
-        // Try to get subject assignments
+        // Get actual subject assignments for this teacher
         try {
-          // Import the subjectService
-          const subjectService = await import('../../services/subjectService').then(m => m.subjectService);
-          
-          // Get all subjects to have their details
-          const allSubjects = await subjectService.getAllSubjects();
-          
-          // Create a mock assignment for testing
-          const mockAssignments = [
-            {
-              id: 1,
-              teacher: teacherData,
-              subject: allSubjects.find(s => s.level === 'JUNIOR_SECONDARY') || allSubjects[0],
-              form: 'Form 1',
-              section: 'A',
-              academicYear: '2025'
-            }
-          ];
-          
-          setAssignments(mockAssignments as any);
+          const teacherAssignments = await teacherService.getTeacherAssignments(teacherId);
+          console.log('Teacher assignments for teacher', teacherId, ':', teacherAssignments);
+          console.log('Number of assignments:', teacherAssignments?.length || 0);
+          setAssignments(teacherAssignments as any);
         } catch (error) {
-          console.error('Error loading subject assignments:', error);
+          console.error('Error loading subject assignments for teacher', teacherId, ':', error);
+          setAssignments([]);
         }
         
         // Import the classService
@@ -121,18 +107,13 @@ const TeacherDetailPage: React.FC = () => {
   }
 
   const assignmentsData = (assignments || []).map(assignment => {
-    let subjectName = 'N/A';
-    if (assignment.subject) {
-      if (typeof assignment.subject === 'object' && assignment.subject.name) {
-        subjectName = assignment.subject.name;
-      } else if (typeof assignment.subject === 'string') {
-        subjectName = assignment.subject;
-      }
-    }
+    // Handle the actual API response structure
+    const subjectName = assignment.subjectName || assignment.subject?.name || 'N/A';
+    const className = `${assignment.form || ''} ${assignment.section || ''}`.trim() || 'N/A';
     
     return {
       subject: subjectName,
-      class: `${assignment.form || ''} ${assignment.section || ''}`.trim() || 'N/A',
+      class: className,
       academicYear: assignment.academicYear || 'N/A'
     };
   });

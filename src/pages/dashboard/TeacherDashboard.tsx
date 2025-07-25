@@ -52,7 +52,7 @@ const TeacherDashboard: React.FC = () => {
 
     const totalAssignments = safeAssignments.length;
     const uniqueSubjects = safeAssignments.length > 0 ?
-      new Set(safeAssignments.map((a: any) => a.subjectId).filter(Boolean)).size : 0;
+      new Set(safeAssignments.map((a: any) => a?.subject?.id).filter(Boolean)).size : 0;
     const uniqueClasses = safeAssignments.length > 0 ?
       new Set(safeAssignments.map((a: any) => `${a.form}-${a.section}`).filter(Boolean)).size : 0;
     const totalStudents = safeAssignments.reduce((sum: number) => {

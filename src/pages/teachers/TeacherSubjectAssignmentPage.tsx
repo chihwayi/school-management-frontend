@@ -83,7 +83,7 @@ const TeacherSubjectAssignmentPage: React.FC = () => {
       // @ts-ignore - Ignore type errors for API response handling
       setAssignments(teacherAssignments.map(assignment => ({
         subjectId: assignment.subjectId,
-        classGroupId: assignment.id,
+        classGroupId: assignment.classGroupId || assignment.id, // Use classGroupId if available, fallback to id
         _original: assignment
       })));
     } else {
@@ -105,17 +105,31 @@ const TeacherSubjectAssignmentPage: React.FC = () => {
       } else {
         console.log(`No subjects found for level ${level}, filtering from all subjects`);
         // Try to filter subjects by level from the complete list
-        const matchingSubjects = subjects.filter(subject => 
-          subject.level && subject.level.toUpperCase().includes(level.toUpperCase())
-        );
+        const matchingSubjects = subjects.filter(subject => {
+          if (!subject.level) return false;
+          
+          const subjectLevel = subject.level.toUpperCase();
+          const targetLevel = level.toUpperCase();
+          
+          // More precise level matching
+          if (targetLevel === 'JUNIOR SECONDARY' || targetLevel === 'JUNIOR_SECONDARY') {
+            return subjectLevel.includes('JUNIOR') || subjectLevel.includes('JUNIOR_SECONDARY');
+          } else if (targetLevel === 'O LEVEL' || targetLevel === 'O_LEVEL') {
+            return subjectLevel.includes('O_LEVEL') && !subjectLevel.includes('A_LEVEL');
+          } else if (targetLevel === 'A LEVEL' || targetLevel === 'A_LEVEL') {
+            return subjectLevel.includes('A_LEVEL');
+          }
+          
+          return subjectLevel.includes(targetLevel);
+        });
         
         if (matchingSubjects.length > 0) {
           console.log(`Found ${matchingSubjects.length} matching subjects by filtering`);
           setFilteredSubjects(matchingSubjects);
         } else {
-          console.log(`No matching subjects found, using all subjects as fallback`);
-          setFilteredSubjects(subjects);
-          toast.success(`No specific subjects found for ${level}. Showing all available subjects.`);
+          console.log(`No matching subjects found for level ${level}`);
+          setFilteredSubjects([]);
+          toast.warning(`No subjects found for ${level} level. Please select a different class.`);
         }
       }
     } catch (error) {
@@ -164,8 +178,10 @@ const TeacherSubjectAssignmentPage: React.FC = () => {
 
   // Save assignments mutation
   const saveAssignmentsMutation = useMutation({
-    mutationFn: (data: { teacherId: number, assignments: SubjectAssignment[] }) => {
-      console.log('Saving assignments:', data);
+    mutationFn: async (data: { teacherId: number, assignments: SubjectAssignment[] }) => {
+      console.log('Saving assignments for teacher:', data.teacherId);
+      console.log('Assignments to save:', data.assignments);
+      
       // Ensure classGroupId is correctly set for each assignment
       const validAssignments = data.assignments.map(assignment => ({
         subjectId: assignment.subjectId,
@@ -173,13 +189,31 @@ const TeacherSubjectAssignmentPage: React.FC = () => {
       }));
       
       console.log('Final assignments being sent to API:', validAssignments);
+      
+      if (validAssignments.length === 0) {
+        throw new Error('No assignments to save');
+      }
+      
       // @ts-ignore
-      return teacherService.saveTeacherAssignments(data.teacherId, validAssignments);
+      const result = await teacherService.saveTeacherAssignments(data.teacherId, validAssignments);
+      console.log('API response:', result);
+      return result;
     },
     onSuccess: (data) => {
       console.log('Save successful, response:', data);
-      queryClient.invalidateQueries({ queryKey: ['teacherAssignments'] });
+      // Force refresh the assignments from the server
+      queryClient.invalidateQueries({ queryKey: ['teacherAssignments', selectedTeacher] });
+      queryClient.refetchQueries({ queryKey: ['teacherAssignments', selectedTeacher] });
       toast.success('Subject assignments saved successfully');
+      
+      // Update local state with the server response
+      if (Array.isArray(data) && data.length > 0) {
+        setAssignments(data.map(assignment => ({
+          subjectId: assignment.subjectId,
+          classGroupId: assignment.classGroupId || assignment.id,
+          _original: assignment
+        })));
+      }
     },
     onError: (error) => {
       console.error('Error saving assignments:', error);
@@ -274,8 +308,9 @@ const TeacherSubjectAssignmentPage: React.FC = () => {
   };
 
   // Get the subjects to display based on class selection
-  // If filtered subjects are empty, fall back to all subjects
-  const subjectsToDisplay = (selectedClassLevel && filteredSubjects.length > 0) ? filteredSubjects : subjects;
+  // Only show filtered subjects if a class is selected, otherwise show empty
+  const subjectsToDisplay = selectedClassLevel && filteredSubjects.length > 0 ? filteredSubjects : 
+                           selectedClassLevel ? [] : subjects;
 
   return (
     <div className="space-y-6">

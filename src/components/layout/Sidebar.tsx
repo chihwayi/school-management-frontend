@@ -86,6 +86,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             show: isAdmin() || isClerk()
         },
         {
+            name: 'Subject Assignment',
+            href: '/app/students/subjects',
+            icon: BookOpen,
+            current: location.pathname === '/app/students/subjects',
+            show: isAdmin() || isClerk()
+        },
+        {
             name: 'Assessments',
             href: ROUTES.ASSESSMENTS,
             icon: ClipboardList,
@@ -100,11 +107,18 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             show: isClassTeacher()
         },
         {
-            name: 'Reports',
+            name: 'Student Reports',
             href: ROUTES.REPORTS,
             icon: BarChart3,
             current: location.pathname === ROUTES.REPORTS,
-            show: true
+            show: isTeacher() || isClassTeacher()
+        },
+        {
+            name: 'Print Reports',
+            href: '/app/reports/print',
+            icon: FileText,
+            current: location.pathname === '/app/reports/print',
+            show: isAdmin() || isClerk()
         },
         {
             name: 'Guardians',

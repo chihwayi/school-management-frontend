@@ -24,6 +24,7 @@ import {
 
 import { Card, Button, Badge } from '../../components/ui';
 import  LoadingSpinner  from '../../components/common/LoadingSpinner';
+import SignatureUpload from '../../components/signatures/SignatureUpload';
 import { teacherService } from '../../services/teacherService';
 import { useAuth } from '../../hooks/useAuth';
 import { formatRoleName } from '../../utils';
@@ -63,7 +64,7 @@ const ClassTeacherDashboard: React.FC = () => {
   // Calculate stats
   const stats = React.useMemo(() => {
     const totalAssignments = assignments?.length || 0;
-    const uniqueSubjects = assignments ? new Set(assignments.map(a => a?.subject?.id).filter(Boolean)).size : 0;
+    const uniqueSubjects = assignments ? new Set(assignments.map(a => a?.subjectId).filter(Boolean)).size : 0;
     const uniqueClasses = assignments ? new Set(assignments.map(a => a?.form && a?.section ? `${a.form}-${a.section}` : null).filter(Boolean)).size : 0;
     const supervisedClassesCount = supervisedClasses?.length || 0;
     const totalStudentsInSupervisedClasses = supervisedClasses ? supervisedClasses.reduce((sum, cls) => sum + (cls?.studentCount || 0), 0) : 0;
@@ -264,7 +265,7 @@ const ClassTeacherDashboard: React.FC = () => {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => window.location.href = `/app/attendance`}
+                      onClick={() => window.location.href = `/app/attendance?class=${classGroup.form}-${classGroup.section}`}
                     >
                       <UserCheck className="h-4 w-4 mr-1" />
                       Mark Attendance
@@ -343,6 +344,52 @@ const ClassTeacherDashboard: React.FC = () => {
         </Card>
       </div>
 
+      {/* Quick Comments Section */}
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-gray-900">Student Comments & Reports</h2>
+          <Link to="/app/reports">
+            <Button size="sm" variant="outline">
+              <MessageSquare className="h-4 w-4 mr-2" />
+              Manage Reports
+            </Button>
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="p-4 bg-blue-50 rounded-lg">
+            <div className="flex items-center mb-2">
+              <BookOpen className="h-5 w-5 text-blue-600 mr-2" />
+              <h3 className="font-medium text-blue-900">Subject Comments</h3>
+            </div>
+            <p className="text-sm text-blue-700 mb-3">
+              Add comments for subjects you teach across all your classes
+            </p>
+            <Link to="/app/reports">
+              <Button size="sm" variant="outline">
+                Add Subject Comments
+              </Button>
+            </Link>
+          </div>
+          <div className="p-4 bg-green-50 rounded-lg">
+            <div className="flex items-center mb-2">
+              <Users className="h-5 w-5 text-green-600 mr-2" />
+              <h3 className="font-medium text-green-900">Overall Comments</h3>
+            </div>
+            <p className="text-sm text-green-700 mb-3">
+              Add overall comments and finalize reports for your supervised classes
+            </p>
+            <Link to="/app/reports">
+              <Button size="sm" variant="outline">
+                Manage Class Reports
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </Card>
+
+      {/* Signature Upload */}
+      <SignatureUpload />
+
       {/* Recent Activities */}
       <Card className="p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Activities</h2>
@@ -356,7 +403,7 @@ const ClassTeacherDashboard: React.FC = () => {
                 Welcome to your Class Teacher Dashboard
               </p>
               <p className="text-sm text-gray-600">
-                Start by marking attendance or recording assessments for your classes
+                Start by marking attendance, recording assessments, or adding student comments
               </p>
             </div>
           </div>

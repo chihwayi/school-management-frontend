@@ -34,5 +34,20 @@ export const subjectService = {
 
   deleteSubject: async (id: number): Promise<void> => {
     await api.delete(`/subjects/${id}`);
+  },
+
+  getTeachersBySubject: async (subjectId: number) => {
+    const response = await api.get(`/subjects/${subjectId}/teachers`);
+    return response.data;
+  },
+
+  getStudentsBySubject: async (subjectId: number) => {
+    const response = await api.get(`/subjects/${subjectId}/students`);
+    return response.data;
+  },
+
+  getClassesBySubject: async (subjectId: number) => {
+    const response = await api.get(`/subjects/${subjectId}/classes`);
+    return response.data;
   }
 };
