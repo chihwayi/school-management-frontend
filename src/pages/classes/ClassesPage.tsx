@@ -8,7 +8,7 @@ import { ClassForm, ClassTeacherAssignmentForm } from '../../components/forms';
 import { Plus, Search, Edit, Trash2, Eye, UserPlus } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { studentService } from '@/services/studentService';
+import { studentService } from '../../services/studentService';
 
 const ClassesPage: React.FC = () => {
   const { isAuthenticated } = useAuth();
