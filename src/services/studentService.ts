@@ -26,6 +26,25 @@ export const studentService = {
     await api.delete(`/students/${id}`);
   },
 
+  downloadTemplate: async (): Promise<Blob> => {
+    const response = await api.get('/students/template', {
+      responseType: 'blob'
+    });
+    return response.data;
+  },
+
+  importStudents: async (file: File): Promise<any> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const response = await api.post('/students/import', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+
   getStudentsByClass: async (form: string, section: string): Promise<Student[]> => {
     const response = await api.get(`/students/form/${form}/section/${section}`);
     return response.data;

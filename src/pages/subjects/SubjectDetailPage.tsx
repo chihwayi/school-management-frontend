@@ -267,7 +267,7 @@ const SubjectDetailPage: React.FC = () => {
                   <Table.Cell>
                     <div className="flex flex-wrap gap-1">
                       {teacher.classes?.map((className, index) => (
-                        <Badge key={`${teacher.id}-${className}-${index}`} className="bg-blue-100 text-blue-800">
+                        <Badge key={`teacher-${teacher.id}-class-${index}`} className="bg-blue-100 text-blue-800">
                           {className}
                         </Badge>
                       ))}

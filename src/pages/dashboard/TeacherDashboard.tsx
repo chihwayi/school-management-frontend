@@ -22,6 +22,7 @@ import {
 
 import { Card, Button, Badge } from '../../components/ui';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import SignatureUpload from '../../components/signatures/SignatureUpload';
 import { teacherService } from '../../services/teacherService';
 import { useAuth } from '../../hooks/useAuth';
 import { formatRoleName } from '../../utils';
@@ -97,7 +98,7 @@ const TeacherDashboard: React.FC = () => {
       title: 'My Subjects',
       description: 'View your teaching subjects',
       icon: <BookOpen className="h-6 w-6" />,
-      href: '/app/subjects',
+      href: '/app/teachers/my-subjects',
       color: 'bg-indigo-500',
     },
     {
@@ -293,6 +294,9 @@ const TeacherDashboard: React.FC = () => {
           )}
         </div>
       </Card>
+
+      {/* Signature Upload */}
+      <SignatureUpload />
 
       {/* Recent Activities */}
       <Card className="p-6">

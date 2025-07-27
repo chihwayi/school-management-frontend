@@ -6,7 +6,8 @@ import type { Student } from '../../types';
 import { Card, Button, Input, Select, Table, Modal } from '../../components/ui';
 import StudentCreateForm from '../../components/forms/StudentCreateForm';
 import StudentEditForm from '../../components/forms/StudentEditForm';
-import { Plus, Search, Filter, Edit, Trash2, Eye } from 'lucide-react';
+import StudentImport from '../../components/students/StudentImport';
+import { Plus, Search, Filter, Edit, Trash2, Eye, Upload } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
@@ -19,6 +20,7 @@ const StudentsPage: React.FC = () => {
   const [levelFilter, setLevelFilter] = useState<string>('');
   const [formFilter, setFormFilter] = useState<string>('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
 
   useEffect(() => {
@@ -133,10 +135,16 @@ const StudentsPage: React.FC = () => {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Students Management</h1>
-        <Button onClick={() => setIsModalOpen(true)} useTheme>
-          <Plus className="w-4 h-4 mr-2" />
-          Add Student
-        </Button>
+        <div className="flex space-x-2">
+          <Button onClick={() => setIsImportModalOpen(true)} variant="outline">
+            <Upload className="w-4 h-4 mr-2" />
+            Import Students
+          </Button>
+          <Button onClick={() => setIsModalOpen(true)} useTheme>
+            <Plus className="w-4 h-4 mr-2" />
+            Add Student
+          </Button>
+        </div>
       </div>
 
       <Card className="mb-6">
@@ -245,6 +253,15 @@ const StudentsPage: React.FC = () => {
             subjects={[]}
           />
         )}
+      </Modal>
+
+      <Modal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        title="Import Students"
+        size="lg"
+      >
+        <StudentImport />
       </Modal>
     </div>
   );
