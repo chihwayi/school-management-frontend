@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
+import { getImageUrl } from '../../utils/imageUtils';
 
 interface ThemeProviderProps {
   children: React.ReactNode;
@@ -8,11 +9,7 @@ interface ThemeProviderProps {
 const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const { theme } = useAuth();
   
-  const getFullImageUrl = (path: string | null) => {
-    if (!path) return null;
-    if (path.startsWith('http')) return path;
-    return `http://localhost:8080${path}`;
-  };
+
 
   useEffect(() => {
     if (theme) {
@@ -23,7 +20,7 @@ const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       
       // Apply background image if available
       if (theme.backgroundPath) {
-        const fullUrl = getFullImageUrl(theme.backgroundPath);
+        const fullUrl = getImageUrl(theme.backgroundPath);
         if (fullUrl) {
           root.style.setProperty('--background-image', `url(${fullUrl})`);
         }
@@ -49,7 +46,7 @@ const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     if (theme?.logoPath) {
       const favicon = document.getElementById('favicon') as HTMLLinkElement;
       if (favicon) {
-        const fullLogoUrl = getFullImageUrl(theme.logoPath);
+        const fullLogoUrl = getImageUrl(theme.logoPath);
         if (fullLogoUrl) {
           favicon.href = fullLogoUrl;
           favicon.type = 'image/png'; // Assuming uploaded logos are PNG/JPG

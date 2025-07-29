@@ -5,6 +5,7 @@ import { useAuth } from '../../hooks/useAuth';
 import type { LoginRequest } from '../../types';
 import LoadingSpinner  from '../../components/common/LoadingSpinner';
 import { toast } from 'react-hot-toast';
+import { getImageUrl } from '../../utils/imageUtils';
 
 const LoginPage: React.FC = () => {
   const { isAuthenticated, isSchoolConfigured, isLoading, login, school, theme } = useAuth();
@@ -39,14 +40,8 @@ const LoginPage: React.FC = () => {
     return <Navigate to="/app" replace />;
   }
 
-  const getFullImageUrl = (path: string | null) => {
-    if (!path) return null;
-    if (path.startsWith('http')) return path;
-    return `http://localhost:8080${path}`;
-  };
-
   const backgroundStyle = theme?.backgroundPath 
-    ? { backgroundImage: `url(${getFullImageUrl(theme.backgroundPath)})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+    ? { backgroundImage: `url(${getImageUrl(theme.backgroundPath)})`, backgroundSize: 'cover', backgroundPosition: 'center' }
     : {};
 
   const primaryColor = theme?.primaryColor || '#3B82F6';
@@ -66,7 +61,7 @@ const LoginPage: React.FC = () => {
         <div className="text-center">
           {theme?.logoPath && (
             <img
-              src={getFullImageUrl(theme.logoPath)}
+              src={getImageUrl(theme.logoPath)}
               alt={school?.name || 'School Logo'}
               className="mx-auto h-16 w-auto mb-4"
               onError={(e) => {

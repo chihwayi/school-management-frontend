@@ -3,6 +3,7 @@ import { Card, Button } from '../ui';
 import { ministryService } from '../../services/ministryService';
 import { Upload, Check, Building2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { getImageUrl } from '../../utils/imageUtils';
 
 const MinistryLogoUpload: React.FC = () => {
   const [ministryLogo, setMinistryLogo] = useState<string | null>(null);
@@ -62,7 +63,7 @@ const MinistryLogoUpload: React.FC = () => {
           
           <div className="border rounded-lg p-4 bg-gray-50">
             <img 
-              src={`http://localhost:8080${ministryLogo}`}
+              src={getImageUrl(ministryLogo) || ''}
               alt="Ministry of Education Logo"
               className="max-h-24 max-w-full object-contain"
             />

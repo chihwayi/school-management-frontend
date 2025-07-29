@@ -3,6 +3,7 @@ import { Card, Button } from '../ui';
 import { signatureService, type SignatureData } from '../../services/signatureService';
 import { Upload, Check } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { getImageUrl } from '../../utils/imageUtils';
 
 const SignatureUpload: React.FC = () => {
   const [signature, setSignature] = useState<SignatureData | null>(null);
@@ -67,7 +68,7 @@ const SignatureUpload: React.FC = () => {
           
           <div className="border rounded-lg p-4 bg-gray-50">
             <img 
-              src={`http://localhost:8080${signature.signatureUrl}`}
+              src={getImageUrl(signature.signatureUrl) || ''}
               alt="My Signature"
               className="max-h-20 max-w-full object-contain"
             />

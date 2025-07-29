@@ -17,6 +17,7 @@ import {
 import { useAuth } from '../../hooks/useAuth';
 import { ROUTES } from '../../constants';
 import { cn } from '../../utils';
+import { getImageUrl } from '../../utils/imageUtils';
 
 interface SidebarProps {
     isOpen: boolean;
@@ -27,11 +28,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     const location = useLocation();
     const { isAdmin, isClerk, isTeacher, isClassTeacher, school, theme } = useAuth();
     
-    const getFullImageUrl = (path: string | null) => {
-        if (!path) return null;
-        if (path.startsWith('http')) return path;
-        return `http://localhost:8080${path}`;
-    };
+
     
     const primaryColor = theme?.primaryColor || '#1F2937';
 
@@ -169,7 +166,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 <div className="flex items-center">
                     {theme?.logoPath ? (
                         <img
-                            src={getFullImageUrl(theme.logoPath) || ''}
+                            src={getImageUrl(theme.logoPath) || ''}
                             alt={school?.name || 'School Logo'}
                             className="h-8 w-8 rounded-full object-cover"
                             onError={(e) => {
