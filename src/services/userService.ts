@@ -25,6 +25,13 @@ export interface RoleUpdateDTO {
   roles: string[];
 }
 
+export interface UserRegistrationDTO {
+  username: string;
+  email: string;
+  password: string;
+  roles: string[];
+}
+
 export const userService = {
   getAllUsers: async (): Promise<UserDTO[]> => {
     const response = await api.get('/users/all');
@@ -64,6 +71,11 @@ export const userService = {
 
   toggleUserStatus: async (username: string): Promise<UserDTO> => {
     const response = await api.post(`/users/toggle-status/${username}`);
+    return response.data;
+  },
+
+  createUser: async (data: UserRegistrationDTO): Promise<UserDTO> => {
+    const response = await api.post('/users/create', data);
     return response.data;
   }
 };

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { Card, Button, Input, Table, Modal } from '../../components/ui';
-import { Search, Edit, Trash2, Key, CheckCircle, XCircle, Shield } from 'lucide-react';
+import { Search, Edit, Trash2, Key, CheckCircle, XCircle, Shield, Plus } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { userService } from '../../services/userService';
 import type { UserDTO, PasswordResetDTO, EmailUpdateDTO, RoleUpdateDTO } from '../../services/userService';
@@ -17,6 +17,8 @@ const UserManagementPage: React.FC = () => {
   const [newPassword, setNewPassword] = useState('');
   const [newEmail, setNewEmail] = useState('');
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
+  const [isCreateUserModalOpen, setIsCreateUserModalOpen] = useState(false);
+  const [newUser, setNewUser] = useState({ username: '', email: '', password: '', roles: [] as string[] });
   
   const queryClient = useQueryClient();
   
@@ -78,6 +80,19 @@ const UserManagementPage: React.FC = () => {
     }
   });
   
+  const createUserMutation = useMutation({
+    mutationFn: userService.createUser,
+    onSuccess: () => {
+      toast.success('User created successfully');
+      setIsCreateUserModalOpen(false);
+      setNewUser({ username: '', email: '', password: '', roles: [] });
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to create user');
+    }
+  });
+  
   const handleResetPassword = () => {
     if (!selectedUser || !newPassword) return;
     
@@ -111,11 +126,29 @@ const UserManagementPage: React.FC = () => {
   const handleToggleStatus = (username: string) => {
     toggleStatusMutation.mutate(username);
   };
+  
+  const handleCreateUser = () => {
+    if (!newUser.username || !newUser.email || !newUser.password || newUser.roles.length === 0) {
+      toast.error('Please fill all fields and select at least one role');
+      return;
+    }
+    
+    createUserMutation.mutate({
+      username: newUser.username,
+      email: newUser.email,
+      password: newUser.password,
+      roles: newUser.roles
+    });
+  };
 
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">User Management</h1>
+        <Button onClick={() => setIsCreateUserModalOpen(true)}>
+          <Plus className="w-4 h-4 mr-2" />
+          Add User
+        </Button>
       </div>
 
       <Card className="mb-6">
@@ -378,6 +411,82 @@ const UserManagementPage: React.FC = () => {
               disabled={selectedRoles.length === 0}
             >
               Update Roles
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Create User Modal */}
+      <Modal
+        isOpen={isCreateUserModalOpen}
+        onClose={() => {
+          setIsCreateUserModalOpen(false);
+          setNewUser({ username: '', email: '', password: '', roles: [] });
+        }}
+        title="Create New User"
+      >
+        <div className="space-y-4">
+          <Input
+            label="Username"
+            value={newUser.username}
+            onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
+            placeholder="Enter username"
+          />
+          <Input
+            type="email"
+            label="Email"
+            value={newUser.email}
+            onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+            placeholder="Enter email"
+          />
+          <Input
+            type="password"
+            label="Password"
+            value={newUser.password}
+            onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+            placeholder="Enter password"
+          />
+          <div className="space-y-2">
+            <label className="block text-sm font-medium">Roles</label>
+            <div className="space-y-2">
+              {['ADMIN', 'CLERK', 'TEACHER', 'CLASS_TEACHER'].map((role) => (
+                <div key={role} className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id={`new-${role}`}
+                    checked={newUser.roles.includes(role)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setNewUser({ ...newUser, roles: [...newUser.roles, role] });
+                      } else {
+                        setNewUser({ ...newUser, roles: newUser.roles.filter(r => r !== role) });
+                      }
+                    }}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor={`new-${role}`} className="ml-2 block text-sm text-gray-900">
+                    {role.replace('_', ' ')}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="flex justify-end space-x-3">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsCreateUserModalOpen(false);
+                setNewUser({ username: '', email: '', password: '', roles: [] });
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCreateUser}
+              disabled={!newUser.username || !newUser.email || !newUser.password || newUser.roles.length === 0}
+              loading={createUserMutation.isPending}
+            >
+              Create User
             </Button>
           </div>
         </div>
